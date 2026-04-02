@@ -3,15 +3,6 @@ import { Connection, PublicKey } from "@solana/web3.js";
 
 const RPC_URL = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
 
-const isValidSolanaAddress = (address: string): boolean => {
-  try {
-    const pubkey = new PublicKey(address);
-    return PublicKey.isOnCurve(pubkey.toBytes());
-  } catch {
-    return false;
-  }
-};
-
 const scanWalletAction = {
   name: "SCAN_WALLET",
   description: "Scan a Solana wallet for active token delegates and assess risk.",
@@ -23,25 +14,23 @@ const scanWalletAction = {
       text.includes("check") ||
       text.includes("wallet") ||
       text.includes("safe") ||
-      text.includes("approval") ||
-      /[1-9A-HJ-NP-Za-km-z]{32,44}/.test(message.content.text || "")
+      text.includes("approval")
     );
   },
   handler: async (_runtime: any, message: any, _state: any, _options: any, callback: any) => {
     const text = message.content.text || "";
-    const matches = text.match(/[1-9A-HJ-NP-Za-km-z]{32,44}/g) || [];
+    const addressMatch = text.match(/[1-9A-HJ-NP-Za-km-z]{32,44}/);
 
-    // Filter only valid Solana addresses
-    const validAddresses = matches.filter(isValidSolanaAddress);
-
-    if (validAddresses.length === 0) {
-      if (callback) await callback({
-        text: "That doesn't look like a valid Solana address. Double check and try again."
-      });
+    if (!addressMatch) {
+      if (callback) {
+        await callback({
+          text: "Please provide your Solana wallet address. Example: 'Scan 7xKXtg2CW87d97TXJSDpbD5jBkheTqA5ypSrZq4dNAX'",
+        });
+      }
       return true;
     }
 
-    const walletAddress = validAddresses[0];
+    const walletAddress = addressMatch[0];
 
     try {
       const connection = new Connection(RPC_URL, "confirmed");
@@ -65,9 +54,11 @@ const scanWalletAction = {
       }
 
       if (delegates.length === 0) {
-        if (callback) await callback({
-          text: `✅ Wallet ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)} is clean. No active token delegates found.`,
-        });
+        if (callback) {
+          await callback({
+            text: `✅ Wallet ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)} is clean. No active token delegates found.`,
+          });
+        }
         return true;
       }
 
@@ -83,13 +74,15 @@ const scanWalletAction = {
         report += `   Amount: ${isUnlimited ? "Unlimited" : d.amount}\n\n`;
       });
 
-      report += `Reply "revoke all" to remove all delegates.`;
+      report += `Reply with "revoke all" to remove all delegates.`;
 
       if (callback) await callback({ text: report });
     } catch (error) {
-      if (callback) await callback({
-        text: `Scan failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-      });
+      if (callback) {
+        await callback({
+          text: `Scan failed: ${error instanceof Error ? error.message : "Unknown error"}. Check the address and try again.`,
+        });
+      }
     }
 
     return true;

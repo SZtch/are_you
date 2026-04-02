@@ -11,7 +11,9 @@
     "@elizaos/core": "^1.0.0",
     "@elizaos/plugin-anthropic": "^1.5.12",
     "@elizaos/plugin-bootstrap": "^1.0.0",
-    "@elizaos/plugin-openai": "^1.0.0"
+    "@elizaos/plugin-openai": "1.0.0",
+    "@solana/web3.js": "^1.98.4",
+    "sentinel-plugin": "file:./plugin"
   },
   "devDependencies": {
     "@elizaos/cli": "^1.0.0",
