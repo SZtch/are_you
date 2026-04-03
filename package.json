@@ -1,11 +1,15 @@
 {
-  "name": "nosana-eliza-agent",
+  "name": "sentinel",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "elizaos start --character ./characters/agent.character.json",
-    "dev": "elizaos dev --character ./characters/agent.character.json"
+    "dev": "next dev",
+    "dev:agent": "elizaos dev --character ./characters/agent.character.json",
+    "build": "next build",
+    "start": "next start",
+    "start:agent": "elizaos start --character ./characters/agent.character.json",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@elizaos/core": "^1.0.0",
@@ -13,10 +17,19 @@
     "@elizaos/plugin-bootstrap": "^1.0.0",
     "@elizaos/plugin-openai": "1.0.0",
     "@solana/web3.js": "^1.98.4",
+    "next": "^15.2.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "sentinel-plugin": "file:./plugin"
   },
   "devDependencies": {
     "@elizaos/cli": "^1.0.0",
+    "@types/node": "^22.13.9",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.3",
+    "tailwindcss": "^3.4.17",
     "typescript": "^5.0.0"
   }
 }
