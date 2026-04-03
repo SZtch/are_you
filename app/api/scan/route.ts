@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { scanWallet } from "@/services/blockchain/solana";
+import { explainScan } from "@/services/agent/eliza";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,12 +14,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const findings = await scanWallet(address);
+    const scan = await scanWallet(address);
+    const explain = await explainScan(scan);
 
     return NextResponse.json({
-      wallet: address,
-      totalFindings: findings.length,
-      findings,
+      ...scan,
+      explain,
     });
   } catch (error) {
     return NextResponse.json(

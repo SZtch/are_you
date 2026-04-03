@@ -7,11 +7,25 @@ const TOKEN_PROGRAM_ID = new PublicKey(
 const RPC_URL =
   process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
 
+export type RiskLevel = "safe" | "medium" | "high";
+
 export type ScanFinding = {
   token: string;
   delegate: string;
   amount: string;
   risk: "high" | "medium";
+  reason: string;
+};
+
+export type ScanSummary = {
+  wallet: string;
+  totalFindings: number;
+  highRiskCount: number;
+  mediumRiskCount: number;
+  riskLevel: RiskLevel;
+  recommendedAction: string;
+  topRisk: ScanFinding | null;
+  findings: ScanFinding[];
 };
 
 export function isValidSolanaAddress(address: string): boolean {
@@ -23,7 +37,55 @@ export function isValidSolanaAddress(address: string): boolean {
   }
 }
 
-export async function scanWallet(address: string): Promise<ScanFinding[]> {
+function toRiskReason(amount: number): { risk: "high" | "medium"; reason: string } {
+  if (amount > 1000000) {
+    return {
+      risk: "high",
+      reason: "Large active delegate amount detected. Review and revoke first.",
+    };
+  }
+
+  return {
+    risk: "medium",
+    reason: "Active delegate found. Review whether this approval is still needed.",
+  };
+}
+
+function buildSummary(wallet: string, findings: ScanFinding[]): ScanSummary {
+  const highRiskCount = findings.filter((item) => item.risk === "high").length;
+  const mediumRiskCount = findings.filter((item) => item.risk === "medium").length;
+
+  const sorted = [...findings].sort((a, b) => {
+    if (a.risk === b.risk) return 0;
+    return a.risk === "high" ? -1 : 1;
+  });
+
+  const topRisk = sorted[0] ?? null;
+
+  let riskLevel: RiskLevel = "safe";
+  let recommendedAction = "No immediate action is required. Run another scan after interacting with new protocols.";
+
+  if (highRiskCount > 0) {
+    riskLevel = "high";
+    recommendedAction = "Revoke the highest-risk delegate first.";
+  } else if (mediumRiskCount > 0) {
+    riskLevel = "medium";
+    recommendedAction = "Review active delegates and revoke unnecessary ones.";
+  }
+
+  return {
+    wallet,
+    totalFindings: findings.length,
+    highRiskCount,
+    mediumRiskCount,
+    riskLevel,
+    recommendedAction,
+    topRisk,
+    findings,
+  };
+}
+
+export async function scanWallet(address: string): Promise<ScanSummary> {
   if (!isValidSolanaAddress(address)) {
     throw new Error("Invalid Solana wallet address");
   }
@@ -49,14 +111,17 @@ export async function scanWallet(address: string): Promise<ScanFinding[]> {
       const numericAmount =
         delegatedAmount !== "unknown" ? Number(delegatedAmount) : 0;
 
+      const { risk, reason } = toRiskReason(numericAmount);
+
       findings.push({
         token: info.mint,
         delegate: info.delegate,
         amount: delegatedAmount,
-        risk: numericAmount > 1000000 ? "high" : "medium",
+        risk,
+        reason,
       });
     }
   }
 
-  return findings;
+  return buildSummary(address, findings);
 }
