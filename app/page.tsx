@@ -1,11 +1,10 @@
-import Link from "next/link";
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function HomePage() {
-  return (
-    <main style={{ padding: 24 }}>
-      <h1>Sentinel</h1>
-      <p>Solana wallet security scanner</p>
-      <Link href="/dashboard">Open dashboard</Link>
-    </main>
-  );
+  const router = useRouter();
+  useEffect(() => { router.replace("/dashboard"); }, [router]);
+  return null;
 }
