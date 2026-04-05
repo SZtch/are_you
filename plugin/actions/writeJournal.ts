@@ -6,7 +6,7 @@ import {
 
 const OPENAI_API_URL = process.env.OPENAI_API_URL;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "nosana";
-const MODEL_NAME = process.env.MODEL_NAME || "Qwen/Qwen3.5-4B";
+const MODEL_NAME = process.env.MODEL_NAME || "Qwen/Qwen3.5-27B-AWQ-4bit";
 
 async function generateJournalContent(sessionSummary: string): Promise<string | null> {
   if (!OPENAI_API_URL) return null;
@@ -56,7 +56,7 @@ export const writeJournalAction = {
     _message: unknown,
     _state: unknown,
     _options: unknown,
-    callback?: (response: { text: string }) => Promise<void>
+    callback?: Function
   ): Promise<boolean> => {
     const sessions = getSessions(7);
 
