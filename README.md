@@ -2,9 +2,9 @@
 
 ![are you happy banner](./assets/NosanaXEliza.jpg)
 
-**are you happy?** is an introspective emotional companion built with ElizaOS and deployed on Nosana's decentralized GPU network.
+**are you happy?** is an introspective emotional companion built with ElizaOS v2 and deployed on Nosana's decentralized GPU network.
 
-It asks you one quiet question at a time — and responds to your answer with warmth, not advice.
+It asks you one quiet question at a time — remembers how you've been — and responds with warmth, not advice.
 
 > "are you carrying something heavy today?"
 
@@ -15,7 +15,23 @@ It asks you one quiet question at a time — and responds to your answer with wa
 - **Asks** — generates short, poetic introspective questions using Qwen3.5 via Nosana GPU
 - **Listens** — presents a simple yes / no choice, no judgment
 - **Responds** — writes an empathetic 3–5 line reply tailored to your answer
+- **Remembers** — tracks your emotional pattern across sessions and adapts its tone
+- **Reflects autonomously** — writes a weekly journal entry about your week *without being asked*
 - **Bilingual** — Indonesian 🇮🇩 and English 🇬🇧, switch anytime
+
+---
+
+## What Makes It Agentic
+
+Solace is not a chatbot. It's an agent that:
+
+| Behavior | How |
+|---|---|
+| Adapts tone based on your emotional trend | `EMOTIONAL_MEMORY` provider injects history into every context |
+| Detects absence (3+ days away) and responds accordingly | Provider calculates days since last session |
+| Writes a weekly reflection *without user triggering it* | Autonomous journal generation after each session |
+| Tracks streaks and honors consistency through tone | Storage layer + provider context |
+| Adjusts question depth (declining → shorter & gentler) | Trend detection: `declining` / `stable` / `positive` |
 
 ---
 
@@ -23,9 +39,11 @@ It asks you one quiet question at a time — and responds to your answer with wa
 
 | Layer | Technology |
 |---|---|
-| Agent Framework | ElizaOS v1 |
-| LLM | Qwen3.5-4B via Nosana Inference |
+| Agent Framework | ElizaOS v2 |
+| LLM | Qwen/Qwen3.5-4B via Nosana Inference |
+| Custom Plugin | `solace-plugin` — ElizaOS provider + action |
 | Frontend | Next.js 15 + React 19 |
+| Storage | JSON file (`data/solace.json`) |
 | Styling | Global CSS — Cormorant Garamond |
 | Compute | Nosana Decentralized GPU |
 
@@ -35,15 +53,33 @@ It asks you one quiet question at a time — and responds to your answer with wa
 
 ```
 [Browser]
-    ↓ POST /api/chat (Next.js route)
+    ↓ POST /api/chat          → question & response
+    ↓ POST /api/session       → save session + trigger autonomous journal
+    ↓ GET  /api/journal       → fetch streak & weekly reflection
 [Next.js — port 3000]
     ↓ proxies to
-[ElizaOS agent — port 3001]  ← Solace character
+[ElizaOS agent — port 3001]   ← Solace character + solace-plugin
+    ↑ EMOTIONAL_MEMORY provider injects history into every message
+    ↑ WRITE_JOURNAL action generates weekly reflection autonomously
     ↓ calls
 [Qwen3.5 via Nosana GPU endpoint]
 ```
 
-The frontend never calls the AI directly. Everything routes through the ElizaOS agent, which runs as a separate process inside the same Docker container.
+---
+
+## Custom Plugin: solace-plugin
+
+### `EMOTIONAL_MEMORY` Provider
+Runs on **every message**. Injects:
+- Last 7 sessions (date, question, answer, language)
+- Emotional trend: `declining` / `stable` / `positive`
+- Days since last session (absence detection)
+- Streak length
+
+Solace uses this to adjust tone and question depth — silently, without ever mentioning it.
+
+### `WRITE_JOURNAL` Action
+Triggered autonomously after each completed session. Calls Qwen via Nosana GPU to write a 3–4 line poetic weekly reflection. Saved to `data/solace.json`. Displayed in the UI after responses.
 
 ---
 
@@ -51,26 +87,22 @@ The frontend never calls the AI directly. Everything routes through the ElizaOS 
 
 ### Prerequisites
 - Node.js 23+
-- npm or bun
 
 ### Setup
 
 ```bash
-# Clone
 git clone https://github.com/SZtch/sentinel
 cd sentinel
 
-# Environment
-cp env.example .env
-# Fill in your Nosana endpoint (or use Ollama locally)
+cp .env.example .env
+# Fill in your Nosana endpoint
 
-# Install
 npm install
 
-# Run ElizaOS agent (terminal 1) — port 3001
+# Terminal 1 — ElizaOS agent (port 3001)
 npm run dev:agent
 
-# Run Next.js frontend (terminal 2) — port 3000
+# Terminal 2 — Next.js frontend (port 3000)
 npm run dev
 ```
 
@@ -78,37 +110,17 @@ Open http://localhost:3000
 
 ---
 
-## Agent Character
-
-The agent is named **Solace** — defined in `characters/agent.character.json`.
-
-It responds to two mode prefixes the frontend sends:
-
-| Prefix | Behavior |
-|---|---|
-| `[MODE:QUESTION]` | Generates one short introspective question |
-| `[MODE:RESPONSE]` | Generates an empathetic 3–5 line reply |
-
-All responses are short, lowercase, poetic — no advice, no lists.
-
----
-
 ## Deploy to Nosana
 
 ```bash
 # Build
-docker build -t yourusername/are-you-happy:latest .
+docker build -t YOUR_DOCKERHUB_USERNAME/are-you-happy:latest .
 
 # Push
-docker push yourusername/are-you-happy:latest
-
-# Deploy via Nosana dashboard
-# https://deploy.nosana.com
+docker push YOUR_DOCKERHUB_USERNAME/are-you-happy:latest
 ```
 
-Update `nos_job_def/nosana_eliza_job_definition.json` with your image name before deploying.
-
-The container exposes port **3000** (Next.js). ElizaOS runs internally on **3001**.
+Update `nos_job_def/nosana_eliza_job_definition.json` with your Docker Hub username, then deploy via [deploy.nosana.com](https://deploy.nosana.com).
 
 ---
 
@@ -116,26 +128,19 @@ The container exposes port **3000** (Next.js). ElizaOS runs internally on **3001
 
 | Variable | Default | Description |
 |---|---|---|
-| `SERVER_PORT` | `3001` | ElizaOS agent port — must not be 3000 |
-| `ELIZA_API_URL` | `http://localhost:3001` | Used by Next.js to proxy to the agent |
-| `ELIZA_AGENT_ID` | `solace` | Agent name/slug |
-| `OPENAI_API_KEY` | `nosana` | Placeholder for Nosana endpoint |
-| `OPENAI_API_URL` | Nosana endpoint URL | Qwen3.5 inference endpoint |
-
----
-
-## Why Nosana?
-
-The Solace agent runs inference on Qwen3.5 — which needs GPU compute. Nosana's decentralized network provides that compute without locking into AWS or GCP.
-
-Every question you're asked, every response you receive — processed on community-owned GPU infrastructure.
+| `SERVER_PORT` | `3001` | ElizaOS agent port |
+| `ELIZA_API_URL` | `http://localhost:3001` | Next.js → agent proxy |
+| `ELIZA_AGENT_ID` | `solace` | Agent name |
+| `OPENAI_API_KEY` | `nosana` | Nosana endpoint placeholder |
+| `OPENAI_API_URL` | Nosana endpoint | Qwen3.5 inference |
+| `MODEL_NAME` | `Qwen/Qwen3.5-4B` | Model served by Nosana |
 
 ---
 
 ## Submission
 
-Built for the **Nosana x ElizaOS Builders' Challenge** on Superteam Earn.
+Built for the **Nosana x ElizaOS Builders' Challenge** — Superteam Earn.
 
 - **GitHub**: [github.com/SZtch/sentinel](https://github.com/SZtch/sentinel)
-- **Stack**: ElizaOS · Next.js 15 · Qwen3.5 · Nosana GPU
+- **Stack**: ElizaOS v2 · Next.js 15 · Qwen3.5 · Nosana GPU · Custom Plugin
 - **Hashtag**: #NosanaAgentChallenge

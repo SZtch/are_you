@@ -1,9 +1,9 @@
 {
   "ops": [
     {
-      "id": "sentinel-agent",
+      "id": "are-you-happy-agent",
       "args": {
-        "image": "yourdockerhubusername/sentinel:latest",
+        "image": "YOUR_DOCKERHUB_USERNAME/are-you-happy:latest",
         "expose": 3000,
         "env": {
           "OPENAI_API_KEY": "nosana",
@@ -15,9 +15,10 @@
           "OPENAI_EMBEDDING_API_KEY": "nosana",
           "OPENAI_EMBEDDING_MODEL": "Qwen3-Embedding-0.6B",
           "OPENAI_EMBEDDING_DIMENSIONS": "1024",
-          "SOLANA_RPC_URL": "https://api.mainnet-beta.solana.com",
           "MODEL_NAME": "Qwen/Qwen3.5-4B",
-          "SERVER_PORT": "3000",
+          "SERVER_PORT": "3001",
+          "ELIZA_API_URL": "http://localhost:3001",
+          "ELIZA_AGENT_ID": "solace",
           "NODE_ENV": "production"
         }
       },

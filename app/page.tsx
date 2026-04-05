@@ -13,6 +13,8 @@ const STATIC = {
     titleYes: 'ya.', titleNo: 'tidak.',
     back: '← kembali',
     retry: '↺ pertanyaan lain',
+    streak: 'hari berturut-turut',
+    thisWeek: 'minggu ini',
   },
   en: {
     yes: 'Yes', no: 'No',
@@ -21,6 +23,8 @@ const STATIC = {
     titleYes: 'yes.', titleNo: 'no.',
     back: '← go back',
     retry: '↺ new question',
+    streak: 'days in a row',
+    thisWeek: 'this week',
   },
 }
 
@@ -40,6 +44,12 @@ const FALLBACK_RESPONSES = {
   },
 }
 
+type JournalData = {
+  streak: number
+  totalSessions: number
+  journal: { week: string; content: string; sessionCount: number } | null
+}
+
 export default function Home() {
   const [lang, setLang] = useState<Lang>('id')
   const [question, setQuestion] = useState('')
@@ -53,12 +63,42 @@ export default function Home() {
   const [resultLoading, setResultLoading] = useState(false)
   const [agentStatus, setAgentStatus] = useState<'idle' | 'connected' | 'error'>('idle')
 
+  // ── Memory state ──
+  const [journalData, setJournalData] = useState<JournalData>({ streak: 0, totalSessions: 0, journal: null })
+  const [showJournal, setShowJournal] = useState(false)
+
   const currentQuestion = useRef('')
+  const currentResponse = useRef('')
   const particlesEl = useRef<HTMLDivElement>(null)
   const pInterval = useRef<ReturnType<typeof setInterval> | null>(null)
   const sessionId = useRef(Math.random().toString(36).slice(2, 12))
   const langRef = useRef(lang)
   langRef.current = lang
+
+  // ── Load journal data on mount ──
+  useEffect(() => {
+    fetch('/api/journal')
+      .then(r => r.json())
+      .then(setJournalData)
+      .catch(() => {})
+  }, [])
+
+  // ── Save session after each completed interaction ──
+  const saveSession = useCallback(async (question: string, answer: Answer, response: string, lang: Lang) => {
+    try {
+      await fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question, answer, response, lang }),
+      })
+      // Refresh journal data after save
+      const res = await fetch('/api/journal')
+      const data = await res.json()
+      setJournalData(data)
+    } catch {
+      // silently fail — session saving is non-critical
+    }
+  }, [])
 
   // ── API ──
   const callAgent = useCallback(async (text: string): Promise<string> => {
@@ -84,6 +124,7 @@ export default function Home() {
     setQuestion('')
     setQuestionLoading(true)
     setButtonsDisabled(true)
+    setShowJournal(false)
     currentQuestion.current = ''
 
     const prompt = activeLang === 'id'
@@ -92,7 +133,7 @@ export default function Home() {
 
     try {
       let q = await callAgent(prompt)
-      q = q.replace(/^["'""]|["'""]$/g, '').trim()
+      q = q.replace(/^["""']|["""']$/g, '').trim()
       if (!q.endsWith('?')) q += '?'
       currentQuestion.current = q
       setQuestion(q)
@@ -114,6 +155,7 @@ export default function Home() {
     const activeLang = langRef.current
     setResultLoading(true)
     setResultLines([])
+    currentResponse.current = ''
 
     const prompt = activeLang === 'id'
       ? `[MODE:RESPONS] Pertanyaan: "${currentQuestion.current}" | Jawaban user: ${type === 'yes' ? 'YA' : 'TIDAK'}. Tulis respons empatik singkat (3-5 baris). Gaya: puitis, hangat, lembut. Setiap baris dipisah newline.`
@@ -122,13 +164,22 @@ export default function Home() {
     try {
       const text = await callAgent(prompt)
       const lines = text.split('\n').filter((l) => l.trim())
-      setResultLines(lines.length ? lines : FALLBACK_RESPONSES[type][activeLang])
+      const finalLines = lines.length ? lines : FALLBACK_RESPONSES[type][activeLang]
+      currentResponse.current = finalLines.join('\n')
+      setResultLines(finalLines)
+
+      // Autonomously save session in background
+      saveSession(currentQuestion.current, type, currentResponse.current, activeLang)
     } catch {
-      setResultLines(FALLBACK_RESPONSES[type][activeLang])
+      const fallback = FALLBACK_RESPONSES[type][activeLang]
+      currentResponse.current = fallback.join('\n')
+      setResultLines(fallback)
     } finally {
       setResultLoading(false)
+      // Show journal reflection after response is ready
+      setTimeout(() => setShowJournal(true), 2000)
     }
-  }, [callAgent])
+  }, [callAgent, saveSession])
 
   // ── ANSWER ──
   const handleAnswer = useCallback(async (type: Answer) => {
@@ -146,6 +197,7 @@ export default function Home() {
   // ── GO BACK ──
   const goBack = useCallback(() => {
     setResultActive(false)
+    setShowJournal(false)
     stopParticles()
     setTimeout(() => {
       setShowResult(false)
@@ -194,11 +246,35 @@ export default function Home() {
 
   return (
     <>
+      <style>{`
+        @keyframes journalFadeIn {
+          from { opacity: 0; transform: translateY(12px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .journal-block {
+          animation: journalFadeIn 0.8s ease both;
+        }
+        .streak-pill {
+          animation: journalFadeIn 0.5s ease both;
+        }
+      `}</style>
+
       {/* particles */}
       <div ref={particlesEl} className="particles" />
 
       {/* header */}
       <div className="header">
+        {/* Streak badge */}
+        {journalData.streak >= 2 && (
+          <div className="streak-pill" style={{
+            fontSize: '11px',
+            color: 'rgba(180,150,120,0.6)',
+            letterSpacing: '0.06em',
+            fontStyle: 'italic',
+          }}>
+            {journalData.streak} {s.streak}
+          </div>
+        )}
         <div className="lang-toggle">
           <button className={`lang-btn${lang === 'id' ? ' active' : ''}`} onClick={() => switchLang('id')}>ID</button>
           <div className="lang-sep" />
@@ -276,6 +352,38 @@ export default function Home() {
               ))
             )}
           </div>
+
+          {/* Weekly journal reflection — appears autonomously after response */}
+          {!resultLoading && showJournal && journalData.journal && (
+            <div className="journal-block" style={{
+              marginTop: '28px',
+              paddingTop: '20px',
+              borderTop: '1px solid rgba(255,255,255,0.06)',
+            }}>
+              <p style={{
+                fontSize: '9px',
+                letterSpacing: '0.18em',
+                color: 'rgba(180,150,120,0.4)',
+                marginBottom: '10px',
+                textTransform: 'uppercase',
+              }}>
+                {s.thisWeek}
+              </p>
+              {journalData.journal.content.split('\n').map((line, i) => (
+                <span key={i} style={{
+                  display: 'block',
+                  fontSize: '13px',
+                  color: 'rgba(200,180,160,0.55)',
+                  fontStyle: 'italic',
+                  lineHeight: 1.8,
+                  opacity: 0,
+                  animation: `fadeIn 0.7s ${0.3 + i * 0.3}s ease both`,
+                }}>
+                  {line}
+                </span>
+              ))}
+            </div>
+          )}
 
           <button className="back-btn" onClick={goBack}>{s.back}</button>
         </div>
