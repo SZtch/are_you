@@ -1,7 +1,5 @@
 import { NextRequest } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { toUUID } from "@/lib/utils";
+import { resolveUserId } from "@/lib/auth";
 import {
   addSession,
   getSessions,
@@ -14,8 +12,6 @@ const OPENAI_API_URL = process.env.OPENAI_API_URL;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "nosana";
 const MODEL_NAME = process.env.MODEL_NAME || "Qwen/Qwen3.5-27B-AWQ-4bit";
 
-// Generate journal content by calling the LLM directly — no ElizaOS dependency.
-// Fire-and-forget: runs in background after session save.
 async function generateAndSaveJournal(userId: string) {
   if (!OPENAI_API_URL) return;
 
@@ -66,11 +62,10 @@ async function generateAndSaveJournal(userId: string) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
+  const userId = await resolveUserId(req);
+  if (!userId) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const userId = toUUID(session.user.id);
 
   try {
     const body = await req.json();
@@ -100,7 +95,6 @@ export async function POST(req: NextRequest) {
 
     addSession(userSession, userId);
 
-    // Fire-and-forget: generate journal directly via LLM
     generateAndSaveJournal(userId).catch(() => {});
 
     return Response.json({ ok: true });

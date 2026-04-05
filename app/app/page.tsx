@@ -105,35 +105,55 @@ function getTimeContext(): string {
   return 'night'
 }
 
-export default function Home() {
-  const { data: session, status } = useSession()
-
-  useEffect(() => {
-    if (status === 'unauthenticated') window.location.href = '/'
-  }, [status])
-
-  if (status === 'loading' || !session) {
-    return (
-      <div style={{
-        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: '#0c0a09', /* FIX: unified warm-black */
-        color: 'rgba(168,150,132,0.72)',
-        fontStyle: 'italic', fontSize: '13px', letterSpacing: '0.18em',
-        animation: 'fadeIn 1s ease both',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div className="dot" />
-          <div className="dot" style={{ animationDelay: '0.2s' }} />
-          <div className="dot" style={{ animationDelay: '0.4s' }} />
-        </div>
+function LoadingDots() {
+  return (
+    <div style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: '#0c0a09',
+      color: 'rgba(168,150,132,0.72)',
+      fontStyle: 'italic', fontSize: '13px', letterSpacing: '0.18em',
+      animation: 'fadeIn 1s ease both',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="dot" />
+        <div className="dot" style={{ animationDelay: '0.2s' }} />
+        <div className="dot" style={{ animationDelay: '0.4s' }} />
       </div>
-    )
-  }
-
-  return <AppContent session={session} />
+    </div>
+  )
 }
 
-function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSession>['data']> }) {
+export default function Home() {
+  const { data: session, status } = useSession()
+  const [isGuest, setIsGuest] = useState(false)
+
+  useEffect(() => {
+    if (status !== 'unauthenticated') return
+    const hasGuest = document.cookie
+      .split(';')
+      .some(c => c.trim().startsWith('oneq_guest_id='))
+    if (hasGuest) {
+      setIsGuest(true)
+    } else {
+      window.location.href = '/'
+    }
+  }, [status])
+
+  if (status === 'loading') return <LoadingDots />
+
+  // unauthenticated + no guest cookie = redirect triggered, hold render
+  if (status === 'unauthenticated' && !isGuest) return null
+
+  return <AppContent session={session} isGuest={isGuest} />
+}
+
+function AppContent({
+  session,
+  isGuest,
+}: {
+  session: ReturnType<typeof useSession>['data']
+  isGuest: boolean
+}) {
   const [lang, setLang] = useState<Lang>('id')
   const [question, setQuestion] = useState('')
   const [questionLoading, setQuestionLoading] = useState(true)
@@ -210,7 +230,7 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
 
     try {
       let q = await callAgent(prompt)
-      q = q.replace(/^["""']|["""']$/g, '').trim()
+      q = q.replace(/^["""]|["""]$/g, '').trim()
       if (!q.endsWith('?')) q += '?'
       currentQuestion.current = q
       setQuestion(q)
@@ -224,7 +244,6 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
     } finally {
       setQuestionLoading(false)
       setButtonsDisabled(false)
-      // show tap hint for first-timers; hides itself after 4s
       const hintTimer = setTimeout(() => setShowHint(true), 600)
       return () => clearTimeout(hintTimer)
     }
@@ -292,7 +311,7 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
       const reply = await callAgent(prompt)
       setChatMessages(prev => [...prev, { role: 'aya', text: reply }])
     } catch {
-      const fallback = activeLang === 'id' ? 'aku di sini.' : 'i\'m here.'
+      const fallback = activeLang === 'id' ? 'aku di sini.' : "i'm here."
       setChatMessages(prev => [...prev, { role: 'aya', text: fallback }])
     } finally {
       setChatLoading(false)
@@ -352,12 +371,13 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
 
   const s = STATIC[lang]
 
+  const displayName = isGuest ? 'guest' : session?.user?.name?.split(' ')[0]
+
   return (
     <>
       <style>{`
         @media (max-width: 640px) {
           .split-screen { display: none !important; }
-
 
           .question-float {
             padding: 0 24px !important;
@@ -425,7 +445,6 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
 
       <div ref={particlesEl} className="particles" />
 
-      {/* split-screen interaction zones — entire screen is clickable */}
       <div
         className="split-screen"
         style={{ opacity: showResult ? 0 : 1, pointerEvents: showResult ? 'none' : 'all' }}
@@ -459,7 +478,6 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
         </div>
       </div>
 
-      {/* question floats centered above the zones */}
       <div
         className="question-float"
         style={{ opacity: showResult ? 0 : 1, pointerEvents: 'none' }}
@@ -487,7 +505,6 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
             </>
           )}
         </div>
-        {/* Mobile inline YES/NO buttons */}
         {!questionLoading && (
           <div className="mobile-answer-btns">
             <button
@@ -507,7 +524,6 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
           </div>
         )}
 
-        {/* first-time affordance — fades in then auto-fades after 4s */}
         {showHint && (
           <p style={{
             marginTop: '32px',
@@ -525,10 +541,8 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
         )}
       </div>
 
-      {/* result overlay — stripped down */}
       {showResult && (
         <div className={`result${resultActive ? ' active' : ''} ${answerType}-result`}>
-          {/* only indicator of which answer: a thin accent bar */}
           <div className="result-accent-bar" />
 
           {answerType === 'yes' ? (
@@ -537,7 +551,6 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
             <div className="static-line" />
           )}
 
-          {/* result lines — collapse to first line when chat is active */}
           <div className="result-body" style={{ transition: 'opacity 0.5s ease' }}>
             {resultLoading ? (
               <div className="question-loading">
@@ -563,7 +576,6 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
             )}
           </div>
 
-          {/* chat prompt */}
           {!resultLoading && showChatPrompt && !chatMode && (
             <div style={{ marginTop: '28px', opacity: 0, animation: 'fadeIn 0.8s 0.2s ease both' }}>
               <button
@@ -590,7 +602,6 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
             </div>
           )}
 
-          {/* chat mode */}
           {!resultLoading && chatMode && (
             <div style={{
               marginTop: '20px', width: '100%',
@@ -661,7 +672,6 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
                     background: 'none', border: 'none',
                     cursor: chatInput.trim() ? 'pointer' : 'default',
                     padding: '0',
-                    /* FIX: explicit opacity so user knows when button is inactive */
                     opacity: chatInput.trim() && !chatLoading ? 1 : 0.28,
                     transition: 'opacity 0.2s ease',
                     display: 'flex', alignItems: 'center',
@@ -690,14 +700,12 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
             <span>{s.back}</span>
           </button>
 
-          {/* journal corner trigger — only when journal exists */}
           {!resultLoading && journalData.journal && showJournal && (
             <button
               onClick={() => setShowJournalPanel(true)}
               style={{
                 position: 'fixed', bottom: '22px', right: '24px',
                 background: 'none', border: 'none',
-                /* FIX: raised opacity + underline hint so users know it's tappable */
                 color: 'rgba(178,152,118,0.75)', fontSize: '11px',
                 letterSpacing: '0.2em', textTransform: 'uppercase',
                 fontStyle: 'italic', cursor: 'pointer',
@@ -721,7 +729,6 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
         </div>
       )}
 
-      {/* journal panel overlay — slides up from bottom */}
       {showJournalPanel && journalData.journal && (
         <div
           className="journal-panel"
@@ -757,7 +764,6 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
         </div>
       )}
 
-      {/* status dot */}
       <div className={`status-dot${agentStatus !== 'idle' ? ` ${agentStatus}` : ''}`}>
         <div className="dot-live" />
         <span>aya here</span>
@@ -765,26 +771,29 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
 
       {/* user info — top left */}
       <div className="user-info">
-        <span className="user-name">{session.user?.name?.split(' ')[0]}</span>
+        <span className="user-name">{displayName}</span>
         <span className="info-sep">·</span>
-        <button className="ghost-btn" onClick={() => signOut({ callbackUrl: '/' })}>sign out</button>
+        {isGuest ? (
+          <a className="ghost-btn" href="/">sign in</a>
+        ) : (
+          <button className="ghost-btn" onClick={() => signOut({ callbackUrl: '/' })}>
+            sign out
+          </button>
+        )}
       </div>
 
-      {/* streak — only after 7 days */}
       {journalData.streak >= 2 && (
         <div className="streak-display">
           {journalData.streak} {s.streak}
         </div>
       )}
 
-      {/* lang switcher — whisper text, bottom left, hidden during result */}
       {!showResult && (
         <button className="lang-switch" onClick={switchLang}>
           {s.switchTo}
         </button>
       )}
 
-      {/* nosana badge */}
       <a className="nosana-badge" href="https://nosana.com" target="_blank" rel="noopener noreferrer">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
           <circle cx="12" cy="12" r="9" strokeWidth="1" />

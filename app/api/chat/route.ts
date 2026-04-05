@@ -1,7 +1,5 @@
 import { NextRequest } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { toUUID } from '@/lib/utils'
+import { resolveUserId } from '@/lib/auth'
 
 const AGENT_URL = process.env.ELIZA_API_URL || 'http://localhost:3001'
 const AGENT_ID  = process.env.ELIZA_AGENT_ID  || '30c8adf3-1590-0456-aed5-9c78c439c205'
@@ -13,7 +11,6 @@ async function getOrCreateSession(userId: string): Promise<string> {
   const cached = sessionCache.get(userId)
   const now = Date.now()
 
-  // Reuse cached session if still valid (5 min buffer before expiry)
   if (cached && cached.expiresAt > now + 5 * 60 * 1000) {
     return cached.sessionId
   }
@@ -21,7 +18,7 @@ async function getOrCreateSession(userId: string): Promise<string> {
   const res = await fetch(`${AGENT_URL}/api/messaging/sessions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ agentId: AGENT_ID, userId: toUUID(userId) }),
+    body: JSON.stringify({ agentId: AGENT_ID, userId }),
     signal: AbortSignal.timeout(10000),
   })
 
@@ -32,7 +29,7 @@ async function getOrCreateSession(userId: string): Promise<string> {
     sessionId: data.sessionId,
     expiresAt: data.expiresAt
       ? new Date(data.expiresAt).getTime()
-      : Date.now() + 60 * 60 * 1000, // fallback: 1 hour
+      : Date.now() + 60 * 60 * 1000,
   })
 
   return data.sessionId
@@ -55,7 +52,6 @@ async function pollForReply(sessionId: string, sentAt: number, maxWait = 15000):
 
     if (agentMsgs.length > 0) {
       const raw = agentMsgs[agentMsgs.length - 1].content
-      // ElizaOS v2 may return content as { text: string } or plain string
       return typeof raw === 'string' ? raw : (raw as { text?: string })?.text ?? ''
     }
   }
@@ -64,8 +60,8 @@ async function pollForReply(sessionId: string, sentAt: number, maxWait = 15000):
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.id) {
+  const userId = await resolveUserId(req)
+  if (!userId) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -81,7 +77,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const sessionId = await getOrCreateSession(session.user.id)
+    const sessionId = await getOrCreateSession(userId)
     const sentAt = Date.now()
 
     const msgRes = await fetch(`${AGENT_URL}/api/messaging/sessions/${sessionId}/messages`, {
@@ -92,8 +88,7 @@ export async function POST(req: NextRequest) {
     })
 
     if (!msgRes.ok) {
-      // Session might have expired — clear cache
-      sessionCache.delete(session.user.id)
+      sessionCache.delete(userId)
       const txt = await msgRes.text().catch(() => '')
       return Response.json({ error: `Session error ${msgRes.status}`, detail: txt }, { status: msgRes.status })
     }
@@ -120,4 +115,3 @@ export async function GET() {
     return Response.json({ status: 'offline', agentUrl: AGENT_URL, agentId: AGENT_ID }, { status: 503 })
   }
 }
-

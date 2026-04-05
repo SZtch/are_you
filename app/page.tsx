@@ -12,7 +12,9 @@ const CONTENT = {
     title2: 'happy?',
     subtitle: 'one question. one feeling. every day.',
     btn: 'continue with google',
+    btnGuest: 'continue as guest',
     btnLoading: 'signing in...',
+    btnGuestLoading: 'entering...',
     footer: 'built on nosana · powered by elizaos',
     switchTo: 'id',
   },
@@ -22,7 +24,9 @@ const CONTENT = {
     title2: 'bahagia?',
     subtitle: 'satu pertanyaan. satu perasaan. setiap hari.',
     btn: 'masuk dengan google',
+    btnGuest: 'lanjut sebagai tamu',
     btnLoading: 'masuk...',
+    btnGuestLoading: 'masuk...',
     footer: 'dibangun di nosana · didukung elizaos',
     switchTo: 'en',
   },
@@ -31,11 +35,11 @@ const CONTENT = {
 export default function Landing() {
   const [visible, setVisible] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [loadingGuest, setLoadingGuest] = useState(false)
   const [lang, setLang] = useState<Lang>('en')
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 100)
-    // detect browser language
     const l = navigator.language || ''
     if (l.startsWith('id')) setLang('id')
     return () => clearTimeout(t)
@@ -50,7 +54,18 @@ export default function Landing() {
     }
   }
 
+  const handleGuest = async () => {
+    setLoadingGuest(true)
+    try {
+      await fetch('/api/auth/guest', { method: 'POST' })
+      window.location.href = '/app'
+    } catch {
+      setLoadingGuest(false)
+    }
+  }
+
   const c = CONTENT[lang]
+  const anyLoading = loading || loadingGuest
 
   return (
     <>
@@ -109,7 +124,7 @@ export default function Landing() {
           font-family: 'Cormorant Garamond', Georgia, serif;
           font-size: 13px;
           letter-spacing: 0.22em;
-          color: rgba(182, 144, 94, 0.78); /* FIX: raised from 0.65 */
+          color: rgba(182, 144, 94, 0.78);
           text-transform: uppercase;
           margin-bottom: 32px;
           opacity: 0;
@@ -137,13 +152,20 @@ export default function Landing() {
           font-family: 'Cormorant Garamond', Georgia, serif;
           font-size: 16px;
           font-style: italic;
-          color: rgba(182, 158, 124, 0.82); /* FIX: raised from 0.68 */
+          color: rgba(182, 158, 124, 0.82);
           margin-bottom: 56px;
           opacity: 0;
           transition: opacity 1.2s ease 0.5s;
         }
 
         .subtitle.visible { opacity: 1; }
+
+        .btn-group {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+        }
 
         @keyframes borderPulse {
           0%, 100% { border-color: rgba(200, 170, 120, 0.18); }
@@ -158,7 +180,7 @@ export default function Landing() {
           background: rgba(255, 255, 255, 0.04);
           border: 1px solid rgba(200, 170, 120, 0.18);
           border-radius: 6px;
-          color: rgba(212, 188, 154, 0.9); /* FIX: raised from 0.8 */
+          color: rgba(212, 188, 154, 0.9);
           font-family: 'Cormorant Garamond', Georgia, serif;
           font-size: 14px;
           letter-spacing: 0.08em;
@@ -183,9 +205,27 @@ export default function Landing() {
           opacity: 0.5;
           cursor: default;
         }
+
         .signin-btn:focus-visible {
           outline: 1px solid rgba(200,170,120,0.35);
           outline-offset: 4px;
+        }
+
+        .guest-btn {
+          font-size: 13px;
+          letter-spacing: 0.06em;
+          color: rgba(180, 160, 130, 0.65);
+          border-color: rgba(180, 160, 130, 0.1);
+          transition: opacity 1.2s ease 1s, background 0.3s, border-color 0.3s, color 0.3s;
+          animation: none !important;
+        }
+
+        .guest-btn.visible { opacity: 1; }
+
+        .guest-btn:hover:not(:disabled) {
+          color: rgba(200, 178, 148, 0.85);
+          border-color: rgba(200, 170, 120, 0.3) !important;
+          animation: none !important;
         }
 
         .footer {
@@ -196,7 +236,7 @@ export default function Landing() {
           font-family: 'Cormorant Garamond', Georgia, serif;
           font-size: 12px;
           letter-spacing: 0.14em;
-          color: rgba(152, 124, 95, 0.62); /* FIX: raised from 0.5 */
+          color: rgba(152, 124, 95, 0.62);
           white-space: nowrap;
           opacity: 0;
           transition: opacity 1.2s ease 1.2s;
@@ -217,7 +257,7 @@ export default function Landing() {
           font-size: 0.72rem;
           letter-spacing: 0.22em;
           text-transform: uppercase;
-          color: rgba(185,160,126,0.72); /* FIX: raised from 0.55 */
+          color: rgba(185,160,126,0.72);
           padding: 5px 10px;
           opacity: 0;
           transition: opacity 1.2s ease 1.5s, color 0.3s ease, border-color 0.3s ease;
@@ -247,7 +287,6 @@ export default function Landing() {
         }
       `}</style>
 
-      {/* lang switcher — top right */}
       <button
         className={`lang-toggle${visible ? ' visible' : ''}`}
         onClick={() => setLang(l => l === 'en' ? 'id' : 'en')}
@@ -264,13 +303,24 @@ export default function Landing() {
           <p className={`subtitle${visible ? ' visible' : ''}`}>
             {c.subtitle}
           </p>
-          <button
-            className={`signin-btn${visible ? ' visible' : ''}`}
-            onClick={handleSignIn}
-            disabled={loading}
-          >
-            {loading ? c.btnLoading : c.btn}
-          </button>
+
+          <div className="btn-group">
+            <button
+              className={`signin-btn${visible ? ' visible' : ''}`}
+              onClick={handleSignIn}
+              disabled={anyLoading}
+            >
+              {loading ? c.btnLoading : c.btn}
+            </button>
+
+            <button
+              className={`signin-btn guest-btn${visible ? ' visible' : ''}`}
+              onClick={handleGuest}
+              disabled={anyLoading}
+            >
+              {loadingGuest ? c.btnGuestLoading : c.btnGuest}
+            </button>
+          </div>
         </div>
 
         <p className={`footer${visible ? ' visible' : ''}`}>
