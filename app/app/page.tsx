@@ -354,6 +354,75 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
 
   return (
     <>
+      <style>{`
+        @media (max-width: 640px) {
+          .split-screen { display: none !important; }
+
+
+          .question-float {
+            padding: 0 24px !important;
+            padding-top: 72px !important;
+            padding-bottom: 32px !important;
+            pointer-events: all !important;
+            justify-content: center !important;
+          }
+
+          .question { font-size: clamp(1.8rem, 8vw, 2.6rem) !important; }
+
+          .breathe-line {
+            height: 20px !important;
+            margin-bottom: 16px !important;
+          }
+
+          .sub-question { margin-top: 8px !important; }
+          .retry-hint   { margin-top: 14px !important; }
+
+          .mobile-answer-btns {
+            display: flex !important;
+            gap: 16px !important;
+            margin-top: 36px !important;
+            width: 100% !important;
+            pointer-events: all !important;
+          }
+
+          .mobile-answer-btn {
+            flex: 1;
+            padding: 14px 0;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(112,100,88,0.25);
+            border-radius: 4px;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 0.78rem;
+            letter-spacing: 0.42em;
+            text-transform: uppercase;
+            color: rgba(112,100,88,0.85);
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            transition: background 0.25s, border-color 0.25s, color 0.25s;
+          }
+
+          .mobile-answer-btn.yes-btn:active {
+            background: rgba(232,160,74,0.1);
+            border-color: rgba(232,160,74,0.5);
+            color: rgba(232,160,74,0.95);
+          }
+
+          .mobile-answer-btn.no-btn:active {
+            background: rgba(91,122,138,0.1);
+            border-color: rgba(91,122,138,0.5);
+            color: rgba(91,122,138,0.95);
+          }
+
+          .mobile-answer-btn:disabled { opacity: 0.35; }
+
+          .status-dot { display: none !important; }
+
+          .result {
+            padding: 72px 24px 80px !important;
+          }
+        }
+      `}</style>
+
       <div ref={particlesEl} className="particles" />
 
       {/* split-screen interaction zones — entire screen is clickable */}
@@ -418,6 +487,26 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
             </>
           )}
         </div>
+        {/* Mobile inline YES/NO buttons */}
+        {!questionLoading && (
+          <div className="mobile-answer-btns">
+            <button
+              className={`mobile-answer-btn yes-btn${hoverSide === 'yes' ? ' active' : ''}`}
+              onClick={() => handleAnswer('yes')}
+              disabled={buttonsDisabled}
+            >
+              {s.yes}
+            </button>
+            <button
+              className={`mobile-answer-btn no-btn${hoverSide === 'no' ? ' active' : ''}`}
+              onClick={() => handleAnswer('no')}
+              disabled={buttonsDisabled}
+            >
+              {s.no}
+            </button>
+          </div>
+        )}
+
         {/* first-time affordance — fades in then auto-fades after 4s */}
         {showHint && (
           <p style={{
