@@ -3,7 +3,7 @@
     {
       "id": "oneq-agent",
       "args": {
-        "image": "YOUR_DOCKERHUB_USERNAME/oneq:latest",
+        "image": "sztch/oneq:latest",
         "expose": 3000,
         "env": {
           "OPENAI_API_KEY": "nosana",
@@ -21,10 +21,10 @@
           "ELIZA_API_URL": "http://localhost:3001",
           "ELIZA_AGENT_ID": "30c8adf3-1590-0456-aed5-9c78c439c205",
           "NODE_ENV": "production",
-          "GOOGLE_CLIENT_ID": "YOUR_GOOGLE_CLIENT_ID",
-          "GOOGLE_CLIENT_SECRET": "YOUR_GOOGLE_CLIENT_SECRET",
-          "NEXTAUTH_SECRET": "YOUR_NEXTAUTH_SECRET",
-          "NEXTAUTH_URL": "https://YOUR_NOSANA_DEPLOYMENT_URL"
+          "NEXTAUTH_SECRET": "REPLACE_WITH_OUTPUT_OF_openssl_rand_base64_32",
+          "NEXTAUTH_URL": "REPLACE_WITH_NOSANA_DEPLOYMENT_URL",
+          "GOOGLE_CLIENT_ID": "",
+          "GOOGLE_CLIENT_SECRET": ""
         }
       },
       "execution": {

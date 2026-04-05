@@ -1,161 +1,118 @@
 # oneQ
 
-![are you happy banner](./assets/NosanaXEliza.jpg)
+![Nosana x ElizaOS](./assets/NosanaXEliza.jpg)
 
-**oneQ** is an introspective emotional companion built with ElizaOS v2 and deployed on Nosana's decentralized GPU network.
+**oneQ** is a quiet emotional companion built with ElizaOS v2, deployed on Nosana's decentralized GPU network.
 
-It asks you one quiet question at a time — remembers how you've been — and responds with warmth, not advice.
+It asks you one introspective question a day. You answer yes or no. It listens, responds with warmth, and after enough sessions — writes you a weekly reflection without being asked.
 
 > "are you carrying something heavy today?"
 
----
-
-## What It Does
-
-- **Asks** — generates short, poetic introspective questions using Qwen3.5-27B via Nosana GPU
-- **Listens** — presents a simple yes / no choice, no judgment
-- **Responds** — writes an empathetic 3–5 line reply tailored to your answer
-- **Remembers** — tracks your emotional pattern across sessions and adapts its tone
-- **Reflects autonomously** — writes a weekly journal entry about your week *without being asked*
-- **Bilingual** — Indonesian 🇮🇩 and English 🇬🇧, switch anytime
+No advice. No dashboards. Just presence.
 
 ---
 
-## What Makes It Agentic
+## How It Works
 
-Aya is not a chatbot. It's an agent that:
+Every session flows through three steps:
 
-| Behavior | How |
+1. **Question** — Aya generates a short introspective question via Qwen3.5-27B on Nosana GPU. Bilingual: Indonesian or English, auto-detected.
+2. **Response** — You answer yes or no. Aya writes a 3–5 line empathetic reply shaped by your emotional history (via `EMOTIONAL_MEMORY` provider, injected on every message).
+3. **Reflection** — After each session, `WRITE_JOURNAL` action fires autonomously. If you've answered enough times this week, Aya writes a quiet weekly journal entry — no prompt from you.
+
+Guest mode is available. No account required to try it.
+
+---
+
+## Stack
+
+| Layer | Tech |
 |---|---|
-| Adapts tone based on your emotional trend | `EMOTIONAL_MEMORY` provider injects history into every context |
-| Detects absence (3+ days away) and responds accordingly | Provider calculates days since last session |
-| Writes a weekly reflection *without user triggering it* | Autonomous journal generation after each session |
-| Tracks streaks and honors consistency through tone | Storage layer + provider context |
-| Adjusts question depth (declining → shorter & gentler) | Trend detection: `declining` / `stable` / `positive` |
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Agent Framework | ElizaOS v2 |
-| LLM | Qwen/Qwen3.5-27B-AWQ-4bit via Nosana Inference |
-| Custom Plugin | `solace-plugin` — ElizaOS provider + action |
+| Agent | ElizaOS v2 |
+| LLM | Qwen/Qwen3.5-27B-AWQ-4bit via Nosana |
+| Plugin | `solace-plugin` — custom provider + action |
 | Frontend | Next.js 15 + React 19 |
-| Storage | JSON file (`data/{userId}.json` per user) |
-| Styling | Global CSS — Cormorant Garamond |
+| Auth | NextAuth (Google OAuth + guest cookie) |
+| Storage | JSON per user (`data/{userId}.json`) |
 | Compute | Nosana Decentralized GPU |
-
----
-
-## Architecture
 
 ```
 [Browser]
-    ↓ POST /api/chat          → question & response
-    ↓ POST /api/session       → save session + trigger autonomous journal
-    ↓ GET  /api/journal       → fetch streak & weekly reflection
+  ↓ POST /api/chat     → question / response / chat
+  ↓ POST /api/session  → save answer + trigger journal async
+  ↓ GET  /api/journal  → fetch streak + weekly reflection
 [Next.js — port 3000]
-    ↓ proxies to
-[ElizaOS agent — port 3001]   ← Aya character + solace-plugin
-    ↑ EMOTIONAL_MEMORY provider injects history into every message
-    ↑ WRITE_JOURNAL action generates weekly reflection autonomously
-    ↓ calls
-[Qwen3.5-27B via Nosana GPU endpoint]
+  ↓ proxy
+[ElizaOS — port 3001]  ← Aya + solace-plugin
+  ↓ EMOTIONAL_MEMORY provider (every message)
+  ↓ WRITE_JOURNAL action (after each session)
+  ↓
+[Qwen3.5-27B on Nosana GPU]
 ```
 
 ---
 
-## Custom Plugin: solace-plugin
-
-### `EMOTIONAL_MEMORY` Provider
-Runs on **every message**. Injects:
-- Last 7 sessions (date, question, answer, language)
-- Emotional trend: `declining` / `stable` / `positive`
-- Days since last session (absence detection)
-- Streak length
-
-Aya uses this to adjust tone and question depth — silently, without ever mentioning it.
-
-### `WRITE_JOURNAL` Action
-Triggered autonomously after each completed session. Calls Qwen via Nosana GPU to write a 3–4 line poetic weekly reflection. Saved to `data/{userId}.json`. Displayed in the UI after responses.
-
----
-
-## Getting Started
-
-### Prerequisites
-- Node.js 23+
-- Bun (package manager)
-
-### Setup
+## Local Setup
 
 ```bash
-git clone https://github.com/SZtch/agent-challenge
-cd agent-challenge
-
-# Install bun if you don't have it
-curl -fsSL https://bun.sh/install | bash
-source ~/.bashrc
-
-# Verify bun is installed
-bun --version
-
-cp .env.example .env
-# Fill in your credentials (see Environment Variables below)
+git clone https://github.com/SZtch/oneQ
+cd oneQ
 
 bun install
+
+cp .env.example .env
+# Fill in NEXTAUTH_SECRET at minimum (see .env.example)
+# GOOGLE_CLIENT_ID / SECRET are optional — guest mode works without them
 
 # Terminal 1 — ElizaOS agent (port 3001)
 bun run dev:agent
 
-# Terminal 2 — Next.js frontend (port 3000)
+# Terminal 2 — Next.js (port 3000)
 bun run dev
 ```
 
-Open http://localhost:3000
+Open http://localhost:3000 — click "continue as guest" to try without Google.
 
 ---
 
 ## Deploy to Nosana
 
 ```bash
-# Build
-docker build -t YOUR_DOCKERHUB_USERNAME/oneq:latest .
+# Build and push your image
+docker build -t sztch/oneq:latest .
+docker push sztch/oneq:latest
 
-# Push
-docker push YOUR_DOCKERHUB_USERNAME/oneq:latest
+# Fill in nos_job_def/nosana_eliza_job_definition.json:
+# - NEXTAUTH_SECRET  (openssl rand -base64 32)
+# - NEXTAUTH_URL     (your Nosana deployment URL)
+# - GOOGLE_CLIENT_ID / SECRET  (optional)
+
+# Deploy via
+# https://deploy.nosana.com
 ```
-
-Update `nos_job_def/nosana_eliza_job_definition.json` with your Docker Hub username, then deploy via [deploy.nosana.com](https://deploy.nosana.com).
 
 ---
 
 ## Environment Variables
 
-| Variable | Default | Description |
+| Variable | Required | Description |
 |---|---|---|
-| `SERVER_PORT` | `3001` | ElizaOS agent port |
-| `ELIZA_API_URL` | `http://localhost:3001` | Next.js → agent proxy |
-| `ELIZA_AGENT_ID` | `30c8adf3-1590-0456-aed5-9c78c439c205` | Agent UUID |
-| `OPENAI_API_KEY` | `nosana` | Nosana endpoint placeholder |
-| `OPENAI_API_URL` | Nosana endpoint | Qwen3.5-27B inference |
-| `MODEL_NAME` | `Qwen/Qwen3.5-27B-AWQ-4bit` | Model served by Nosana |
-| `GOOGLE_CLIENT_ID` | — | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | — | Google OAuth client secret |
-| `NEXTAUTH_SECRET` | — | Random secret (`openssl rand -base64 32`) |
-| `NEXTAUTH_URL` | `http://localhost:3000` | App base URL (prod: Nosana URL) |
-| `OPENAI_BASE_URL` | Nosana endpoint | Required by ElizaOS plugin-openai |
+| `NEXTAUTH_SECRET` | yes | `openssl rand -base64 32` |
+| `NEXTAUTH_URL` | yes | App base URL |
+| `OPENAI_API_KEY` | yes | Set to `nosana` |
+| `OPENAI_API_URL` | yes | Nosana inference endpoint |
+| `OPENAI_BASE_URL` | yes | Same as above |
+| `MODEL_NAME` | yes | `Qwen/Qwen3.5-27B-AWQ-4bit` |
+| `SERVER_PORT` | yes | `3001` (Eliza, must not conflict with Next.js) |
+| `ELIZA_API_URL` | yes | `http://localhost:3001` |
+| `ELIZA_AGENT_ID` | yes | `30c8adf3-1590-0456-aed5-9c78c439c205` |
+| `GOOGLE_CLIENT_ID` | no | Google OAuth — app works without it |
+| `GOOGLE_CLIENT_SECRET` | no | Google OAuth — app works without it |
 
-> **Note:** `data/{userId}.json` is ephemeral on Nosana — sessions reset if the container restarts. This is a known limitation of the MVP.
+> **Note:** `data/{userId}.json` is ephemeral on Nosana — sessions reset on container restart. Known MVP limitation.
 
 ---
 
-## Submission
+Built for the **Nosana x ElizaOS Builders' Challenge** — Superteam Earn.  
+`#NosanaAgentChallenge`
 
-Built for the **Nosana x ElizaOS Builders' Challenge** — Superteam Earn.
-
-- **GitHub**: [github.com/SZtch/agent-challenge](https://github.com/SZtch/agent-challenge)
-- **Stack**: ElizaOS v2 · Next.js 15 · Qwen3.5-27B · Nosana GPU · Custom Plugin
-- **Hashtag**: #NosanaAgentChallenge
