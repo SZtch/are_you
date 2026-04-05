@@ -15,6 +15,10 @@ const STATIC = {
     streak: 'hari',
     thisWeek: 'minggu ini',
     switchTo: 'en',
+    chatPrompt: 'ingin cerita lebih?',
+    chatPlaceholder: 'cerita saja...',
+    chatSend: '↑',
+    chatClose: 'cukup untuk hari ini',
   },
   en: {
     yes: 'yes', no: 'no',
@@ -24,6 +28,10 @@ const STATIC = {
     streak: 'days',
     thisWeek: 'this week',
     switchTo: 'id',
+    chatPrompt: 'want to talk about it?',
+    chatPlaceholder: 'just talk...',
+    chatSend: '↑',
+    chatClose: "that's enough for today",
   },
 }
 
@@ -100,6 +108,12 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
   const [agentStatus, setAgentStatus] = useState<'idle' | 'connected' | 'error'>('idle')
   const [journalData, setJournalData] = useState<JournalData>({ streak: 0, journal: null })
   const [showJournal, setShowJournal] = useState(false)
+  const [chatMode, setChatMode] = useState(false)
+  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'aya'; text: string }[]>([])
+  const [chatInput, setChatInput] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
+  const [showChatPrompt, setShowChatPrompt] = useState(false)
+  const chatEndRef = useRef<HTMLDivElement>(null)
 
   const currentQuestion = useRef('')
   const currentResponse = useRef('')
@@ -197,6 +211,7 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
       saveSession(currentQuestion.current, type, currentResponse.current, activeLang)
       setResultLoading(false)
       setTimeout(() => setShowJournal(true), 2000)
+      setTimeout(() => setShowChatPrompt(true), 3500)
     }
   }, [callAgent, saveSession])
 
@@ -213,9 +228,40 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
     await generateResponse(type)
   }, [generateResponse, buttonsDisabled])
 
+  const sendChatMessage = useCallback(async () => {
+    const text = chatInput.trim()
+    if (!text || chatLoading) return
+    const activeLang = langRef.current
+
+    setChatMessages(prev => [...prev, { role: 'user', text }])
+    setChatInput('')
+    setChatLoading(true)
+
+    const modePrefix = activeLang === 'id' ? '[MODE:CURHAT]' : '[MODE:CHAT]'
+    const context = currentQuestion.current
+      ? `Context — sebelumnya Aya bertanya: "${currentQuestion.current}"`
+      : ''
+    const prompt = `${modePrefix} ${context}\nUser: ${text}`
+
+    try {
+      const reply = await callAgent(prompt)
+      setChatMessages(prev => [...prev, { role: 'aya', text: reply }])
+    } catch {
+      const fallback = activeLang === 'id' ? 'aku di sini.' : 'i\'m here.'
+      setChatMessages(prev => [...prev, { role: 'aya', text: fallback }])
+    } finally {
+      setChatLoading(false)
+      setTimeout(() => chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 100)
+    }
+  }, [chatInput, chatLoading, callAgent])
+
   const goBack = useCallback(() => {
     setResultActive(false)
     setShowJournal(false)
+    setChatMode(false)
+    setChatMessages([])
+    setChatInput('')
+    setShowChatPrompt(false)
     stopParticles()
     setTimeout(() => {
       setShowResult(false)
@@ -373,6 +419,136 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
                   {line}
                 </span>
               ))}
+            </div>
+          )}
+
+          {/* curhat / chat mode */}
+          {!resultLoading && showChatPrompt && !chatMode && (
+            <div style={{
+              marginTop: '28px', opacity: 0,
+              animation: 'fadeIn 0.8s 0.2s ease both',
+            }}>
+              <button
+                onClick={() => setChatMode(true)}
+                style={{
+                  background: 'none', border: 'none',
+                  color: 'rgba(200,170,140,0.4)', fontSize: '12px',
+                  fontStyle: 'italic', letterSpacing: '0.08em',
+                  cursor: 'pointer', padding: '4px 0',
+                  borderBottom: '1px solid rgba(200,170,140,0.15)',
+                  transition: 'color 0.3s, border-color 0.3s',
+                }}
+                onMouseEnter={e => {
+                  (e.target as HTMLButtonElement).style.color = 'rgba(220,190,160,0.75)'
+                  ;(e.target as HTMLButtonElement).style.borderColor = 'rgba(220,190,160,0.3)'
+                }}
+                onMouseLeave={e => {
+                  (e.target as HTMLButtonElement).style.color = 'rgba(200,170,140,0.4)'
+                  ;(e.target as HTMLButtonElement).style.borderColor = 'rgba(200,170,140,0.15)'
+                }}
+              >
+                {s.chatPrompt}
+              </button>
+            </div>
+          )}
+
+          {!resultLoading && chatMode && (
+            <div style={{
+              marginTop: '28px', width: '100%',
+              maxWidth: 'min(460px, 88vw)',
+              opacity: 0, animation: 'fadeIn 0.6s ease both',
+            }}>
+              {/* divider */}
+              <div style={{
+                borderTop: '1px solid rgba(255,255,255,0.05)',
+                marginBottom: '20px',
+              }} />
+
+              {/* message thread */}
+              <div style={{
+                maxHeight: '260px', overflowY: 'auto',
+                display: 'flex', flexDirection: 'column', gap: '14px',
+                paddingRight: '4px', marginBottom: '16px',
+                scrollbarWidth: 'none',
+              }}>
+                {chatMessages.map((msg, i) => (
+                  <div key={i} style={{
+                    display: 'flex',
+                    justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                    opacity: 0,
+                    animation: `fadeIn 0.5s ${i * 0.1}s ease both`,
+                  }}>
+                    <span style={{
+                      fontSize: '13px',
+                      lineHeight: 1.75,
+                      maxWidth: '85%',
+                      color: msg.role === 'aya'
+                        ? 'rgba(215,195,170,0.75)'
+                        : 'rgba(180,165,148,0.55)',
+                      fontStyle: msg.role === 'aya' ? 'italic' : 'normal',
+                      letterSpacing: '0.02em',
+                      textAlign: msg.role === 'user' ? 'right' : 'left',
+                    }}>
+                      {msg.text}
+                    </span>
+                  </div>
+                ))}
+                {chatLoading && (
+                  <div style={{ display: 'flex', gap: '5px', paddingLeft: '2px' }}>
+                    {[0,1,2].map(i => (
+                      <div key={i} className="dot" style={{ animationDelay: `${i * 0.2}s` }} />
+                    ))}
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              {/* input */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '10px',
+                borderBottom: '1px solid rgba(200,170,140,0.15)',
+                paddingBottom: '8px',
+              }}>
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && sendChatMessage()}
+                  placeholder={s.chatPlaceholder}
+                  autoFocus
+                  style={{
+                    flex: 1, background: 'none', border: 'none', outline: 'none',
+                    color: 'rgba(220,200,178,0.7)', fontSize: '13px',
+                    fontStyle: 'italic', letterSpacing: '0.03em',
+                    caretColor: 'rgba(220,190,150,0.5)',
+                  }}
+                />
+                <button
+                  onClick={sendChatMessage}
+                  disabled={chatLoading || !chatInput.trim()}
+                  style={{
+                    background: 'none', border: 'none',
+                    color: chatInput.trim() ? 'rgba(220,180,130,0.6)' : 'rgba(255,255,255,0.1)',
+                    fontSize: '16px', cursor: chatInput.trim() ? 'pointer' : 'default',
+                    padding: '0 2px', transition: 'color 0.2s',
+                  }}
+                >
+                  {s.chatSend}
+                </button>
+              </div>
+
+              {/* close chat */}
+              <button
+                onClick={() => setChatMode(false)}
+                style={{
+                  background: 'none', border: 'none',
+                  color: 'rgba(160,140,120,0.3)', fontSize: '10px',
+                  letterSpacing: '0.1em', cursor: 'pointer',
+                  marginTop: '14px', fontStyle: 'italic',
+                }}
+              >
+                {s.chatClose}
+              </button>
             </div>
           )}
 
