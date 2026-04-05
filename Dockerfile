@@ -3,8 +3,12 @@
 FROM node:23-slim AS base
 
 RUN apt-get update && apt-get install -y \
-  python3 make g++ git curl \
+  python3 make g++ git curl unzip \
   && rm -rf /var/lib/apt/lists/*
+
+# Install bun
+RUN curl -fsSL https://bun.sh/install | bash
+ENV PATH="/root/.bun/bin:$PATH"
 
 ENV ELIZAOS_TELEMETRY_DISABLED=true
 ENV DO_NOT_TRACK=1
@@ -14,13 +18,13 @@ WORKDIR /app
 # ── Install dependencies ──
 COPY package.json ./
 COPY plugin/package.json ./plugin/
-RUN npm install
+RUN bun install
 
 # ── Copy all source ──
 COPY . .
 
 # ── Build Next.js ──
-RUN npm run build
+RUN bun run build
 
 # ── Runtime directories ──
 RUN mkdir -p /app/data
@@ -39,6 +43,4 @@ ENV ELIZA_API_URL=http://localhost:3001
 ENV ELIZA_AGENT_ID=aya
 
 # ── Start both processes ──
-# ElizaOS starts first; health-check loop polls /health every 2s
-# so Next.js only starts after the agent is truly ready.
-CMD ["sh", "-c", "SERVER_PORT=3001 npm run start:agent & until curl -sf http://localhost:3001/health > /dev/null 2>&1; do sleep 2; done && npm run start"]
+CMD ["sh", "-c", "SERVER_PORT=3001 bun run start:agent & until curl -sf http://localhost:3001/health > /dev/null 2>&1; do sleep 2; done && bun run start"]

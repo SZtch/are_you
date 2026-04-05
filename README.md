@@ -87,6 +87,7 @@ Triggered autonomously after each completed session. Calls Qwen via Nosana GPU t
 
 ### Prerequisites
 - Node.js 23+
+- Bun (package manager)
 
 ### Setup
 
@@ -94,16 +95,23 @@ Triggered autonomously after each completed session. Calls Qwen via Nosana GPU t
 git clone https://github.com/SZtch/agent-challenge
 cd agent-challenge
 
-cp .env.example .env
-# Fill in your Nosana endpoint (see .env.example for details)
+# Install bun if you don't have it
+curl -fsSL https://bun.sh/install | bash
+source ~/.bashrc
 
-npm install
+# Verify bun is installed
+bun --version
+
+cp .env.example .env
+# Fill in your credentials (see Environment Variables below)
+
+bun install
 
 # Terminal 1 — ElizaOS agent (port 3001)
-npm run dev:agent
+bun run dev:agent
 
 # Terminal 2 — Next.js frontend (port 3000)
-npm run dev
+bun run dev
 ```
 
 Open http://localhost:3000
