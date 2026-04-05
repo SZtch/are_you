@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     return Response.json({
       streak,
       journal: journal
-        ? { week: journal.week, content: journal.content, sessionCount: journal.sessionCount }
+        ? { week: journal.week, content: journal.content, sessionCount: journal.sessionCount, generatedAt: journal.generatedAt }
         : null,
     });
   } catch {

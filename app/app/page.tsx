@@ -86,7 +86,7 @@ const FALLBACK_RESPONSES = {
 
 type JournalData = {
   streak: number
-  journal: { week: string; content: string; sessionCount: number } | null
+  journal: { week: string; content: string; sessionCount: number; generatedAt?: number } | null
 }
 
 function detectLang(): Lang {
@@ -166,6 +166,7 @@ function AppContent({
   const [resultLoading, setResultLoading] = useState(false)
   const [agentStatus, setAgentStatus] = useState<'idle' | 'connected' | 'error'>('idle')
   const [journalData, setJournalData] = useState<JournalData>({ streak: 0, journal: null })
+  const [journalStatus, setJournalStatus] = useState<'idle' | 'pending' | 'ready' | 'error'>('idle')
   const [showJournal, setShowJournal] = useState(false)
   const [showJournalPanel, setShowJournalPanel] = useState(false)
   const [chatMode, setChatMode] = useState(false)
@@ -193,25 +194,51 @@ function AppContent({
 
   const saveSession = useCallback(async (question: string, answer: Answer, response: string, lang: Lang) => {
     try {
+      // Snapshot current generatedAt before we trigger a new journal write
+      const previousGeneratedAt = journalData.journal?.generatedAt ?? null
+
       await fetch('/api/session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question, answer, response, lang }),
       })
 
-      // First fetch immediately (optimistic — may not have journal yet)
-      const res = await fetch('/api/journal')
-      setJournalData(await res.json())
+      // Journal is now being written by Eliza async — signal pending
+      setJournalStatus('pending')
 
-      // Eliza writes journal async, refetch after delay to catch it
-      const refetch = async () => {
-        const r = await fetch('/api/journal')
-        setJournalData(await r.json())
+      const tryRefetch = async (): Promise<boolean> => {
+        try {
+          const r = await fetch('/api/journal')
+          const data: JournalData = await r.json()
+          const isNew = data.journal?.generatedAt !== undefined
+            && data.journal.generatedAt !== previousGeneratedAt
+          if (isNew) {
+            setJournalData(data)
+            setJournalStatus('ready')
+            return true
+          }
+          return false
+        } catch {
+          return false
+        }
       }
-      setTimeout(refetch, 1500)
-      setTimeout(refetch, 4000)
-    } catch {}
-  }, [])
+
+      // Attempt 1: 1.8s — catches fast Eliza responses
+      await new Promise(r => setTimeout(r, 1800))
+      const got1 = await tryRefetch()
+      if (got1) return
+
+      // Attempt 2: another 2.5s — safety net for slow responses
+      await new Promise(r => setTimeout(r, 2500))
+      const got2 = await tryRefetch()
+      if (!got2) {
+        // Still nothing — soft fail, journal will appear on next load
+        setJournalStatus('error')
+      }
+    } catch {
+      setJournalStatus('error')
+    }
+  }, [journalData.journal?.generatedAt])
 
   const callAgent = useCallback(async (text: string): Promise<string> => {
     const res = await fetch('/api/chat', {
@@ -710,7 +737,7 @@ function AppContent({
             <span>{s.back}</span>
           </button>
 
-          {!resultLoading && journalData.journal && showJournal && (
+          {!resultLoading && journalData.journal && showJournal && journalStatus !== 'pending' && (
             <button
               onClick={() => setShowJournalPanel(true)}
               style={{
@@ -735,6 +762,30 @@ function AppContent({
             >
               {s.thisWeek}
             </button>
+          )}
+
+          {!resultLoading && showJournal && journalStatus === 'pending' && (
+            <p style={{
+              position: 'fixed', bottom: '22px', right: '24px',
+              margin: 0, fontSize: '11px', letterSpacing: '0.18em',
+              textTransform: 'uppercase', fontStyle: 'italic',
+              color: 'rgba(178,152,118,0.45)',
+              opacity: 0, animation: 'fadeIn 0.8s 1s ease both',
+            }}>
+              {lang === 'id' ? 'refleksi sedang ditulis...' : 'reflection is being written...'}
+            </p>
+          )}
+
+          {!resultLoading && showJournal && journalStatus === 'error' && !journalData.journal && (
+            <p style={{
+              position: 'fixed', bottom: '22px', right: '24px',
+              margin: 0, fontSize: '11px', letterSpacing: '0.18em',
+              textTransform: 'uppercase', fontStyle: 'italic',
+              color: 'rgba(178,152,118,0.35)',
+              opacity: 0, animation: 'fadeIn 0.8s 1s ease both',
+            }}>
+              {lang === 'id' ? 'refleksi akan muncul sebentar lagi.' : 'reflection will appear shortly.'}
+            </p>
           )}
         </div>
       )}
