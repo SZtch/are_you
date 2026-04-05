@@ -167,6 +167,7 @@ function AppContent({
   const [agentStatus, setAgentStatus] = useState<'idle' | 'connected' | 'error'>('idle')
   const [journalData, setJournalData] = useState<JournalData>({ streak: 0, journal: null })
   const [journalStatus, setJournalStatus] = useState<'idle' | 'pending' | 'ready' | 'error'>('idle')
+  const [journalJustReady, setJournalJustReady] = useState(false)
   const [showJournal, setShowJournal] = useState(false)
   const [showJournalPanel, setShowJournalPanel] = useState(false)
   const [chatMode, setChatMode] = useState(false)
@@ -215,6 +216,8 @@ function AppContent({
           if (isNew) {
             setJournalData(data)
             setJournalStatus('ready')
+            setJournalJustReady(true)
+            setTimeout(() => setJournalJustReady(false), 2200)
             return true
           }
           return false
@@ -743,21 +746,24 @@ function AppContent({
               style={{
                 position: 'fixed', bottom: '22px', right: '24px',
                 background: 'none', border: 'none',
-                color: 'rgba(178,152,118,0.75)', fontSize: '11px',
+                color: journalJustReady ? 'rgba(230,196,140,0.9)' : 'rgba(178,152,118,0.75)',
+                fontSize: '11px',
                 letterSpacing: '0.2em', textTransform: 'uppercase',
                 fontStyle: 'italic', cursor: 'pointer',
-                opacity: 0, animation: 'fadeIn 0.8s 1s ease both',
-                transition: 'color 0.3s, border-color 0.3s',
+                opacity: 0, animation: 'fadeIn 0.5s 0.1s ease both',
+                transition: 'color 0.4s ease, border-color 0.4s ease',
                 padding: '0 0 2px 0',
-                borderBottom: '1px solid rgba(178,152,118,0.22)',
+                borderBottom: journalJustReady
+                  ? '1px solid rgba(230,196,140,0.45)'
+                  : '1px solid rgba(178,152,118,0.22)',
               }}
               onMouseEnter={e => {
                 e.currentTarget.style.color = 'rgba(210,182,148,0.82)'
                 e.currentTarget.style.borderBottomColor = 'rgba(210,182,148,0.42)'
               }}
               onMouseLeave={e => {
-                e.currentTarget.style.color = 'rgba(178,152,118,0.55)'
-                e.currentTarget.style.borderBottomColor = 'rgba(178,152,118,0.22)'
+                e.currentTarget.style.color = journalJustReady ? 'rgba(230,196,140,0.9)' : 'rgba(178,152,118,0.55)'
+                e.currentTarget.style.borderBottomColor = journalJustReady ? 'rgba(230,196,140,0.45)' : 'rgba(178,152,118,0.22)'
               }}
             >
               {s.thisWeek}
@@ -765,15 +771,28 @@ function AppContent({
           )}
 
           {!resultLoading && showJournal && journalStatus === 'pending' && (
-            <p style={{
+            <div style={{
               position: 'fixed', bottom: '22px', right: '24px',
-              margin: 0, fontSize: '11px', letterSpacing: '0.18em',
-              textTransform: 'uppercase', fontStyle: 'italic',
-              color: 'rgba(178,152,118,0.45)',
-              opacity: 0, animation: 'fadeIn 0.8s 1s ease both',
+              display: 'flex', alignItems: 'center', gap: '8px',
+              opacity: 0, animation: 'fadeIn 0.8s 0.6s ease both',
             }}>
-              {lang === 'id' ? 'refleksi sedang ditulis...' : 'reflection is being written...'}
-            </p>
+              <span style={{
+                fontSize: '11px', letterSpacing: '0.18em',
+                textTransform: 'uppercase', fontStyle: 'italic',
+                color: 'rgba(178,152,118,0.45)',
+              }}>
+                {lang === 'id' ? 'refleksi sedang ditulis' : 'reflection is being written'}
+              </span>
+              <span style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+                {[0, 1, 2].map(i => (
+                  <span key={i} style={{
+                    display: 'inline-block', width: '3px', height: '3px',
+                    borderRadius: '50%', background: 'rgba(178,152,118,0.4)',
+                    animation: `dotPulse 1.4s ${i * 0.2}s ease-in-out infinite`,
+                  }} />
+                ))}
+              </span>
+            </div>
           )}
 
           {!resultLoading && showJournal && journalStatus === 'error' && !journalData.journal && (
@@ -782,9 +801,21 @@ function AppContent({
               margin: 0, fontSize: '11px', letterSpacing: '0.18em',
               textTransform: 'uppercase', fontStyle: 'italic',
               color: 'rgba(178,152,118,0.35)',
-              opacity: 0, animation: 'fadeIn 0.8s 1s ease both',
+              opacity: 0, animation: 'fadeIn 0.8s 0.5s ease both',
             }}>
               {lang === 'id' ? 'refleksi akan muncul sebentar lagi.' : 'reflection will appear shortly.'}
+            </p>
+          )}
+
+          {!resultLoading && showJournal && journalStatus === 'idle' && !journalData.journal && (
+            <p style={{
+              position: 'fixed', bottom: '22px', right: '24px',
+              margin: 0, fontSize: '11px', letterSpacing: '0.18em',
+              textTransform: 'uppercase', fontStyle: 'italic',
+              color: 'rgba(178,152,118,0.28)',
+              opacity: 0, animation: 'fadeIn 0.8s 1.5s ease both',
+            }}>
+              {lang === 'id' ? 'refleksi akan muncul setelah beberapa sesi.' : 'reflections will appear after a few sessions.'}
             </p>
           )}
         </div>

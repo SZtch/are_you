@@ -191,14 +191,12 @@ export default function Landing() {
 
         .signin-btn.visible {
           opacity: 1;
-          animation: borderPulse 4s 2.2s ease-in-out infinite;
         }
 
         .signin-btn:hover:not(:disabled) {
           background: rgba(255, 255, 255, 0.07);
           border-color: rgba(200, 170, 120, 0.5) !important;
           color: rgba(230, 210, 180, 0.95);
-          animation-play-state: paused;
         }
 
         .signin-btn:disabled {
@@ -211,21 +209,40 @@ export default function Landing() {
           outline-offset: 4px;
         }
 
+        /* Guest = primary CTA — gets the pulse */
         .guest-btn {
-          font-size: 13px;
-          letter-spacing: 0.06em;
-          color: rgba(180, 160, 130, 0.65);
-          border-color: rgba(180, 160, 130, 0.1);
-          transition: opacity 1.2s ease 1s, background 0.3s, border-color 0.3s, color 0.3s;
-          animation: none !important;
+          font-size: 14px;
+          letter-spacing: 0.08em;
+          color: rgba(212, 188, 154, 0.9);
+          border-color: rgba(200, 170, 120, 0.18);
+          transition: opacity 1.2s ease 0.8s, background 0.3s, border-color 0.3s, color 0.3s;
+          animation: borderPulse 4s 2.2s ease-in-out infinite;
         }
 
         .guest-btn.visible { opacity: 1; }
 
         .guest-btn:hover:not(:disabled) {
-          color: rgba(200, 178, 148, 0.85);
-          border-color: rgba(200, 170, 120, 0.3) !important;
+          background: rgba(255, 255, 255, 0.07);
+          border-color: rgba(200, 170, 120, 0.5) !important;
+          color: rgba(230, 210, 180, 0.95);
+          animation-play-state: paused;
+        }
+
+        /* Google = secondary, more ghost */
+        .google-btn {
+          font-size: 13px;
+          letter-spacing: 0.06em;
+          color: rgba(175, 155, 125, 0.52);
+          border-color: rgba(180, 160, 130, 0.1);
+          transition: opacity 1.2s ease 1.1s, background 0.3s, border-color 0.3s, color 0.3s;
           animation: none !important;
+        }
+
+        .google-btn.visible { opacity: 1; }
+
+        .google-btn:hover:not(:disabled) {
+          color: rgba(200, 178, 148, 0.75);
+          border-color: rgba(200, 170, 120, 0.25) !important;
         }
 
         .footer {
@@ -306,19 +323,19 @@ export default function Landing() {
 
           <div className="btn-group">
             <button
-              className={`signin-btn${visible ? ' visible' : ''}`}
-              onClick={handleSignIn}
-              disabled={anyLoading}
-            >
-              {loading ? c.btnLoading : c.btn}
-            </button>
-
-            <button
               className={`signin-btn guest-btn${visible ? ' visible' : ''}`}
               onClick={handleGuest}
               disabled={anyLoading}
             >
               {loadingGuest ? c.btnGuestLoading : c.btnGuest}
+            </button>
+
+            <button
+              className={`signin-btn google-btn${visible ? ' visible' : ''}`}
+              onClick={handleSignIn}
+              disabled={anyLoading}
+            >
+              {loading ? c.btnLoading : c.btn}
             </button>
           </div>
         </div>
