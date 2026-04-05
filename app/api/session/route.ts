@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { toUUID } from "@/lib/utils";
 import {
   addSession,
   getSessions,
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const userId = session.user.id;
+  const userId = toUUID(session.user.id);
 
   try {
     const body = await req.json();
@@ -77,6 +78,14 @@ export async function POST(req: NextRequest) {
 
     if (!question || !answer || !lang) {
       return Response.json({ error: "Missing fields" }, { status: 400 });
+    }
+
+    if (!["yes", "no"].includes(answer)) {
+      return Response.json({ error: "Invalid answer" }, { status: 400 });
+    }
+
+    if (!["id", "en"].includes(lang)) {
+      return Response.json({ error: "Invalid lang" }, { status: 400 });
     }
 
     const userSession: Session = {

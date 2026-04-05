@@ -138,7 +138,7 @@ Update `nos_job_def/nosana_eliza_job_definition.json` with your Docker Hub usern
 |---|---|---|
 | `SERVER_PORT` | `3001` | ElizaOS agent port |
 | `ELIZA_API_URL` | `http://localhost:3001` | Next.js → agent proxy |
-| `ELIZA_AGENT_ID` | `aya` | Agent name |
+| `ELIZA_AGENT_ID` | `30c8adf3-1590-0456-aed5-9c78c439c205` | Agent UUID |
 | `OPENAI_API_KEY` | `nosana` | Nosana endpoint placeholder |
 | `OPENAI_API_URL` | Nosana endpoint | Qwen3.5-27B inference |
 | `MODEL_NAME` | `Qwen/Qwen3.5-27B-AWQ-4bit` | Model served by Nosana |

@@ -1,5 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { toUUID } from "@/lib/utils";
 import { getSessions, getLatestJournal, getStreak } from "../../../lib/storage";
 
 export async function GET() {
@@ -7,7 +8,7 @@ export async function GET() {
   if (!session?.user?.id) {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const userId = session.user.id;
+  const userId = toUUID(session.user.id);
 
   try {
     const sessions = getSessions(30, userId);

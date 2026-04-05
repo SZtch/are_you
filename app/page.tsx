@@ -43,7 +43,11 @@ export default function Landing() {
 
   const handleSignIn = async () => {
     setLoading(true)
-    await signIn('google', { callbackUrl: '/app' })
+    try {
+      await signIn('google', { callbackUrl: '/app' })
+    } catch {
+      setLoading(false)
+    }
   }
 
   const c = CONTENT[lang]
@@ -211,7 +215,6 @@ export default function Landing() {
           text-transform: uppercase;
           color: rgba(180,155,120,0.55);
           padding: 5px 10px;
-          transition: color 0.3s ease, border-color 0.3s ease;
           opacity: 0;
           transition: opacity 1.2s ease 1.5s, color 0.3s ease, border-color 0.3s ease;
         }

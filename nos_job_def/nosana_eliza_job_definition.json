@@ -19,7 +19,7 @@
           "MODEL_NAME": "Qwen/Qwen3.5-27B-AWQ-4bit",
           "SERVER_PORT": "3001",
           "ELIZA_API_URL": "http://localhost:3001",
-          "ELIZA_AGENT_ID": "aya",
+          "ELIZA_AGENT_ID": "30c8adf3-1590-0456-aed5-9c78c439c205",
           "NODE_ENV": "production",
           "GOOGLE_CLIENT_ID": "YOUR_GOOGLE_CLIENT_ID",
           "GOOGLE_CLIENT_SECRET": "YOUR_GOOGLE_CLIENT_SECRET",

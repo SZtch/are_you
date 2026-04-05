@@ -40,7 +40,7 @@ ENV NODE_ENV=production
 # ElizaOS agent port — must NOT conflict with Next.js (3000)
 ENV SERVER_PORT=3001
 ENV ELIZA_API_URL=http://localhost:3001
-ENV ELIZA_AGENT_ID=aya
+ENV ELIZA_AGENT_ID=30c8adf3-1590-0456-aed5-9c78c439c205
 
 # ── Start both processes ──
 CMD ["sh", "-c", "SERVER_PORT=3001 bun run start:agent & until curl -sf http://localhost:3001/api/server/health > /dev/null 2>&1; do sleep 2; done && bun run start"]

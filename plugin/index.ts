@@ -1,11 +1,10 @@
 import { type Plugin } from "@elizaos/core";
 import { emotionalMemoryProvider } from "./providers/emotionalMemory.js";
-import { writeJournalAction } from "./actions/writeJournal.js";
 
 export const solacePlugin: Plugin = {
   name: "solace-plugin",
-  description: "Emotional memory and autonomous journaling for the Solace agent.",
-  actions: [writeJournalAction],
+  description: "Emotional memory and adaptive tone for the Aya agent.",
+  actions: [],
   providers: [emotionalMemoryProvider],
   evaluators: [],
 };
