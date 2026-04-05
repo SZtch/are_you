@@ -94,7 +94,7 @@
     "solace-plugin"
   ],
   "settings": {
-    "model": "Qwen/Qwen3.5-4B",
+    "model": "Qwen/Qwen3.5-27B-AWQ-4bit",
     "temperature": 0.85,
     "maxResponseLength": 200,
     "secrets": {}

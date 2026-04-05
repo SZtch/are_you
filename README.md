@@ -12,7 +12,7 @@ It asks you one quiet question at a time — remembers how you've been — and r
 
 ## What It Does
 
-- **Asks** — generates short, poetic introspective questions using Qwen3.5 via Nosana GPU
+- **Asks** — generates short, poetic introspective questions using Qwen3.5-27B via Nosana GPU
 - **Listens** — presents a simple yes / no choice, no judgment
 - **Responds** — writes an empathetic 3–5 line reply tailored to your answer
 - **Remembers** — tracks your emotional pattern across sessions and adapts its tone
@@ -40,7 +40,7 @@ Solace is not a chatbot. It's an agent that:
 | Layer | Technology |
 |---|---|
 | Agent Framework | ElizaOS v2 |
-| LLM | Qwen/Qwen3.5-4B via Nosana Inference |
+| LLM | Qwen/Qwen3.5-27B-AWQ-4bit via Nosana Inference |
 | Custom Plugin | `solace-plugin` — ElizaOS provider + action |
 | Frontend | Next.js 15 + React 19 |
 | Storage | JSON file (`data/solace.json`) |
@@ -62,7 +62,7 @@ Solace is not a chatbot. It's an agent that:
     ↑ EMOTIONAL_MEMORY provider injects history into every message
     ↑ WRITE_JOURNAL action generates weekly reflection autonomously
     ↓ calls
-[Qwen3.5 via Nosana GPU endpoint]
+[Qwen3.5-27B via Nosana GPU endpoint]
 ```
 
 ---
@@ -91,11 +91,11 @@ Triggered autonomously after each completed session. Calls Qwen via Nosana GPU t
 ### Setup
 
 ```bash
-git clone https://github.com/SZtch/sentinel
-cd sentinel
+git clone https://github.com/SZtch/agent-challenge
+cd agent-challenge
 
 cp .env.example .env
-# Fill in your Nosana endpoint
+# Fill in your Nosana endpoint (see .env.example for details)
 
 npm install
 
@@ -132,8 +132,10 @@ Update `nos_job_def/nosana_eliza_job_definition.json` with your Docker Hub usern
 | `ELIZA_API_URL` | `http://localhost:3001` | Next.js → agent proxy |
 | `ELIZA_AGENT_ID` | `solace` | Agent name |
 | `OPENAI_API_KEY` | `nosana` | Nosana endpoint placeholder |
-| `OPENAI_API_URL` | Nosana endpoint | Qwen3.5 inference |
-| `MODEL_NAME` | `Qwen/Qwen3.5-4B` | Model served by Nosana |
+| `OPENAI_API_URL` | Nosana endpoint | Qwen3.5-27B inference |
+| `MODEL_NAME` | `Qwen/Qwen3.5-27B-AWQ-4bit` | Model served by Nosana |
+
+> **Note:** `data/solace.json` is ephemeral on Nosana — sessions reset if the container restarts. This is a known limitation of the MVP.
 
 ---
 
@@ -141,6 +143,6 @@ Update `nos_job_def/nosana_eliza_job_definition.json` with your Docker Hub usern
 
 Built for the **Nosana x ElizaOS Builders' Challenge** — Superteam Earn.
 
-- **GitHub**: [github.com/SZtch/sentinel](https://github.com/SZtch/sentinel)
-- **Stack**: ElizaOS v2 · Next.js 15 · Qwen3.5 · Nosana GPU · Custom Plugin
+- **GitHub**: [github.com/SZtch/agent-challenge](https://github.com/SZtch/agent-challenge)
+- **Stack**: ElizaOS v2 · Next.js 15 · Qwen3.5-27B · Nosana GPU · Custom Plugin
 - **Hashtag**: #NosanaAgentChallenge
