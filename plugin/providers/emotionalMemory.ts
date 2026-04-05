@@ -9,9 +9,20 @@ export const emotionalMemoryProvider = {
   name: "EMOTIONAL_MEMORY",
 
   get: async (_runtime: unknown, _message: unknown, _state: unknown): Promise<{ text: string }> => {
-    // Extract userId from ElizaOS message — injected by Next.js /api/chat
-    const message = _message as { userId?: string };
-    const userId = message?.userId || "default";
+    // Extract userId from ElizaOS message — injected by Next.js /api/chat via session creation.
+    // ElizaOS v2 populates message.userId from the session's userId field.
+    // We also check entityId and roomId as fallbacks before defaulting,
+    // to prevent cross-user memory contamination.
+    const message = _message as {
+      userId?: string;
+      entityId?: string;
+      roomId?: string;
+      content?: { text?: string };
+    };
+    const userId =
+      (message?.userId && message.userId !== "00000000-0000-0000-0000-000000000000")
+        ? message.userId
+        : (message?.entityId ?? "default");
 
     const sessions = getSessions(14, userId);
 
