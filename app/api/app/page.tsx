@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useSession, signIn, signOut } from 'next-auth/react'
+import { useSession, signOut } from 'next-auth/react'
 
 type Lang = 'id' | 'en'
 type Answer = 'yes' | 'no'
@@ -54,14 +54,12 @@ type JournalData = {
 export default function Home() {
   const { data: session, status } = useSession()
 
-  // Redirect to landing if not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
       window.location.href = '/'
     }
   }, [status])
 
-  // Loading state while checking auth
   if (status === 'loading' || !session) {
     return (
       <div style={{
@@ -73,6 +71,10 @@ export default function Home() {
     )
   }
 
+  return <AppContent session={session} />
+}
+
+function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSession>['data']> }) {
   const [lang, setLang] = useState<Lang>('id')
   const [question, setQuestion] = useState('')
   const [questionLoading, setQuestionLoading] = useState(true)
@@ -189,16 +191,14 @@ export default function Home() {
       const finalLines = lines.length ? lines : FALLBACK_RESPONSES[type][activeLang]
       currentResponse.current = finalLines.join('\n')
       setResultLines(finalLines)
-
-      // Autonomously save session in background
-      saveSession(currentQuestion.current, type, currentResponse.current, activeLang)
     } catch {
       const fallback = FALLBACK_RESPONSES[type][activeLang]
       currentResponse.current = fallback.join('\n')
       setResultLines(fallback)
     } finally {
+      // Always save session — even if agent was unreachable and used fallback
+      saveSession(currentQuestion.current, type, currentResponse.current, activeLang)
       setResultLoading(false)
-      // Show journal reflection after response is ready
       setTimeout(() => setShowJournal(true), 2000)
     }
   }, [callAgent, saveSession])

@@ -13,6 +13,7 @@ WORKDIR /app
 
 # ── Install dependencies ──
 COPY package.json ./
+COPY plugin/package.json ./plugin/
 RUN npm install
 
 # ── Copy all source ──
@@ -35,7 +36,7 @@ ENV NODE_ENV=production
 # ElizaOS agent port — must NOT conflict with Next.js (3000)
 ENV SERVER_PORT=3001
 ENV ELIZA_API_URL=http://localhost:3001
-ENV ELIZA_AGENT_ID=solace
+ENV ELIZA_AGENT_ID=aya
 
 # ── Start both processes ──
 # ElizaOS starts first; `sleep 8` gives it time to initialize before Next.js

@@ -55,4 +55,3 @@ coverage/
 
 # User data — must NOT be baked into image
 data/
-`
