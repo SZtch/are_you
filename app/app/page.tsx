@@ -198,8 +198,18 @@ function AppContent({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question, answer, response, lang }),
       })
+
+      // First fetch immediately (optimistic — may not have journal yet)
       const res = await fetch('/api/journal')
       setJournalData(await res.json())
+
+      // Eliza writes journal async, refetch after delay to catch it
+      const refetch = async () => {
+        const r = await fetch('/api/journal')
+        setJournalData(await r.json())
+      }
+      setTimeout(refetch, 1500)
+      setTimeout(refetch, 4000)
     } catch {}
   }, [])
 
