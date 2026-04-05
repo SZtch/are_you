@@ -3,12 +3,12 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 
-import { UserBar } from '../../components/UserBar'
-import { QuestionCard } from '../../components/QuestionCard'
-import { ResponsePanel } from '../../components/ResponsePanel'
-import { StatusBanner } from '../../components/StatusBanner'
-import { JournalPanel } from '../../components/JournalPanel'
-import type { Lang, Answer, JournalData } from '../../components/types'
+import { UserBar } from './components/UserBar'
+import { QuestionCard } from './components/QuestionCard'
+import { ResponsePanel } from './components/ResponsePanel'
+import { StatusBanner } from './components/StatusBanner'
+import { JournalPanel } from './components/JournalPanel'
+import type { Lang, Answer, JournalData } from './components/types'
 
 // ── Constants ────────────────────────────────────────────────
 const STATIC = {
@@ -515,14 +515,10 @@ function AppContent({
         />
       )}
 
-      <div className={`status-dot${agentStatus !== 'idle' ? ` ${agentStatus}` : ''}`}>
-        <div className="dot-live" />
-        <span>aya here</span>
-      </div>
-
       <UserBar
         displayName={displayName}
         isGuest={isGuest}
+        agentStatus={agentStatus}
         onSignOut={() => signOut({ callbackUrl: '/' })}
       />
 

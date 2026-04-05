@@ -59,7 +59,6 @@ export function QuestionCard({
           <span className="split-label">{s.yes}</span>
         </div>
 
-        <div className="split-divider" />
 
         <div
           role="button"

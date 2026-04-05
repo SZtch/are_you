@@ -2,17 +2,6 @@
 
 import { RefObject } from 'react'
 import { Answer, LangStrings } from './types'
-
-function IconBack() {
-  return (
-    <svg width="18" height="8" viewBox="0 0 18 8" fill="none" stroke="currentColor" strokeWidth="0.7" strokeLinecap="round">
-      <line x1="17" y1="4" x2="1" y2="4" />
-      <line x1="1" y1="4" x2="4" y2="1.5" />
-      <line x1="1" y1="4" x2="4" y2="6.5" />
-    </svg>
-  )
-}
-
 function IconSend({ active }: { active: boolean }) {
   return (
     <svg width="18" height="14" viewBox="0 0 18 14" fill="none"
@@ -83,15 +72,7 @@ export function ResponsePanel({
           <div className="question-loading">
             <div className="dot" /><div className="dot" /><div className="dot" />
           </div>
-        ) : chatMode ? (
-          <span style={{
-            display: 'block', opacity: 0.28, fontSize: '15px',
-            fontStyle: 'italic', letterSpacing: '0.04em',
-            transition: 'opacity 0.5s ease',
-          }}>
-            {resultLines[0]}
-          </span>
-        ) : (
+        ) : chatMode ? null : (
           resultLines.map((line, i) => (
             <span
               key={`${line}-${i}`}
@@ -225,9 +206,28 @@ export function ResponsePanel({
       )}
 
       {/* Back button */}
-      <button className="back-btn" onClick={onBack} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <IconBack />
-        <span>{s.back}</span>
+      <button
+        onClick={onBack}
+        style={{
+          marginTop: '48px',
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          fontFamily: "'Cormorant Garamond', Georgia, serif",
+          fontSize: '15px',
+          letterSpacing: '0.22em',
+          textTransform: 'uppercase',
+          color: 'rgba(152,134,112,0.75)',
+          padding: '0',
+          transition: 'color 0.2s ease',
+        }}
+        onMouseEnter={e => (e.currentTarget.style.color = 'rgba(210,188,160,0.95)')}
+        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(152,134,112,0.75)')}
+      >
+        ‹ back
       </button>
     </div>
   )
