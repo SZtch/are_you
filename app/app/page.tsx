@@ -655,7 +655,7 @@ function AppContent({ session }: { session: NonNullable<ReturnType<typeof useSes
       {/* user info — top left */}
       <div className="user-info">
         <span className="user-name">{session.user?.name?.split(' ')[0]}</span>
-        <span className="info-sep"> </span>
+        <span className="info-sep">·</span>
         <button className="ghost-btn" onClick={() => signOut({ callbackUrl: '/' })}>sign out</button>
       </div>
 

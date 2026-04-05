@@ -93,6 +93,7 @@ body::before {
 .split-screen {
   position: fixed; inset: 0;
   z-index: 10; display: flex;
+  flex-direction: row; /* LEFT/RIGHT split */
   transition: opacity 0.6s ease;
 }
 
@@ -100,23 +101,26 @@ body::before {
   flex: 1;
   position: relative;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
-  padding-bottom: clamp(48px, 8vh, 80px);
   cursor: pointer;
   overflow: hidden;
   transition: background 0.8s var(--ease);
-  /* FIX: remove default button styles for accessibility via role=button */
   border: none;
   background: none;
   -webkit-tap-highlight-color: transparent;
 }
+
+.yes-half { align-items: center; }
+.no-half  { align-items: center; }
+
 .split-half::before {
   content: ''; position: absolute; inset: 0;
   opacity: 0; transition: opacity 0.8s var(--ease); pointer-events: none;
 }
-.yes-half::before { background: radial-gradient(ellipse 90% 70% at 20% 70%, rgba(180,95,15,0.14) 0%, transparent 65%); }
-.no-half::before  { background: radial-gradient(ellipse 90% 70% at 80% 70%, rgba(35,65,95,0.17) 0%, transparent 65%); }
+/* gradients for top/bottom layout */
+.yes-half::before { background: radial-gradient(ellipse 80% 60% at 50% 20%, rgba(180,95,15,0.13) 0%, transparent 65%); }
+.no-half::before  { background: radial-gradient(ellipse 80% 60% at 50% 80%, rgba(35,65,95,0.16) 0%, transparent 65%); }
 .split-half.active::before { opacity: 1; }
 
 /* FIX: keyboard focus ring */
@@ -127,22 +131,49 @@ body::before {
 
 .split-label {
   font-family: inherit;
-  font-size: clamp(0.85rem, 1.8vw, 1.1rem);
-  letter-spacing: 0.4em;
+  font-size: clamp(1rem, 2.2vw, 1.35rem); /* lebih besar — punya presence */
+  letter-spacing: 0.45em;
   text-transform: uppercase;
-  color: rgba(105, 95, 85, 0.9);  /* FIX: was var(--sub) at 0.6, raised contrast */
-  opacity: 0.78;
-  transition: opacity 0.5s ease, color 0.5s ease, letter-spacing 0.5s ease;
+  color: rgba(112, 100, 88, 0.82);
+  opacity: 1;
+  transition: color 0.5s ease, letter-spacing 0.5s ease, border-color 0.5s ease;
   position: relative; z-index: 1;
   user-select: none;
   pointer-events: none;
+  /* affordance: garis tipis sebagai hint interaktif */
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(112, 100, 88, 0.22);
 }
-.yes-half.active .split-label { opacity: 0.88; color: var(--yes); letter-spacing: 0.55em; }
-.no-half.active  .split-label { opacity: 0.78; color: var(--no);  letter-spacing: 0.55em; }
+/* YA kiri: garis di kanan — nunjuk ke divider */
+.yes-half .split-label {
+  padding-right: 10px;
+  padding-left: 0;
+  border-right: 1px solid rgba(112, 100, 88, 0.22);
+  border-bottom: none;
+}
+/* TIDAK kanan: garis di kiri — nunjuk ke divider */
+.no-half .split-label {
+  padding-left: 10px;
+  padding-right: 0;
+  border-left: 1px solid rgba(112, 100, 88, 0.22);
+  border-bottom: none;
+}
+/* Hover */
+.yes-half.active .split-label {
+  color: var(--yes);
+  letter-spacing: 0.58em;
+  border-right-color: rgba(232, 160, 74, 0.45);
+}
+.no-half.active .split-label {
+  color: var(--no);
+  letter-spacing: 0.58em;
+  border-left-color: rgba(91, 122, 138, 0.45);
+}
 
 .split-divider {
   position: absolute; left: 50%; top: 12vh; bottom: 12vh;
   width: 1px;
+  height: auto;
   background: linear-gradient(to bottom, transparent, rgba(55,50,45,0.25) 25%, rgba(55,50,45,0.25) 75%, transparent);
   z-index: 12; pointer-events: none;
   transform: translateX(-50%);
@@ -153,7 +184,7 @@ body::before {
   position: fixed; inset: 0; z-index: 15;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding-bottom: min(20vh, 110px); /* FIX: capped for short screens (iPhone SE) */
+  padding-bottom: min(20vh, 110px);
   padding-left: clamp(20px, 6vw, 60px);
   padding-right: clamp(20px, 6vw, 60px);
   pointer-events: none;
@@ -304,23 +335,38 @@ body::before {
 
 /* ── USER INFO ── */
 .user-info {
-  position: fixed; top: 18px; left: 20px; z-index: 50;
-  display: flex; align-items: center; gap: 8px;
+  position: fixed; top: 22px; left: 24px; z-index: 50;
+  display: flex; align-items: baseline; gap: 10px;
   animation: fadeIn 1s 1.5s ease both; opacity: 0;
 }
+/* Nama user — lebih besar, warm, terasa diterima */
 .user-name {
-  font-size: 14px; font-style: italic;
-  color: rgba(200,178,148,0.9); /* FIX: raised from 0.85 */
-  letter-spacing: 0.04em;
+  font-size: 17px;
+  font-style: italic;
+  font-weight: 300;
+  color: rgba(218, 196, 162, 0.95);
+  letter-spacing: 0.03em;
 }
-.info-sep { color: rgba(180,150,120,0.4); font-size: 12px; }
+/* Separator · */
+.info-sep {
+  color: rgba(160, 135, 105, 0.38);
+  font-size: 13px;
+  font-style: normal;
+}
+/* Sign out — kecil, uppercase, tersembunyi tapi ketemu */
 .ghost-btn {
   background: none; border: none; cursor: pointer;
-  font-family: inherit; font-size: 13px; letter-spacing: 0.08em;
-  color: rgba(158, 133, 108, 0.8); /* FIX: raised from 0.6 */
-  padding: 0; transition: color 0.2s ease;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(148, 125, 100, 0.58);
+  padding: 0;
+  transition: color 0.25s ease;
+  position: relative;
+  top: -1px; /* baseline nudge biar sejajar optis */
 }
-.ghost-btn:hover { color: rgba(200,175,145,0.98); }
+.ghost-btn:hover { color: rgba(198, 172, 140, 0.92); }
 .ghost-btn:focus-visible { outline: 1px solid rgba(200,170,120,0.35); outline-offset: 4px; }
 
 /* ── STREAK ── */
