@@ -1,4 +1,4 @@
-import { generateText, ModelClass, type IAgentRuntime } from "@elizaos/core";
+import { ModelType, type IAgentRuntime } from "@elizaos/core";
 import {
   getSessions,
   addJournalEntry,
@@ -49,11 +49,9 @@ Sessions:
 ${summary}`;
 
     try {
-      // Generate via ElizaOS runtime — routes through the configured model (Qwen on Nosana)
-      const content = await generateText({
-        runtime: _runtime as IAgentRuntime,
-        context: prompt,
-        modelClass: ModelClass.SMALL,
+      const runtime = _runtime as IAgentRuntime;
+      const content = await runtime.useModel(ModelType.TEXT_SMALL, {
+        prompt,
       });
 
       if (content?.trim()) {

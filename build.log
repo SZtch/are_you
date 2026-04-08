@@ -1,0 +1,235 @@
+#1 [internal] load local bake definitions
+#1 reading from stdin 467B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.21kB done
+#2 DONE 0.0s
+
+#3 resolve image config for docker-image://docker.io/docker/dockerfile:1
+#3 DONE 0.8s
+
+#4 docker-image://docker.io/docker/dockerfile:1@sha256:2780b5c3bab67f1f76c781860de469442999ed1a0d7992a5efdf2cffc0e3d769
+#4 CACHED
+
+#5 [internal] load metadata for docker.io/library/node:23-slim
+#5 DONE 0.7s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 552B done
+#6 DONE 0.0s
+
+#7 [ 1/10] FROM docker.io/library/node:23-slim@sha256:86191b94d2a163be41f3dc7fe5e5fcaca8ba2f1be7275d98a06343483c17414a
+#7 DONE 0.0s
+
+#8 [internal] load build context
+#8 transferring context: 60.88kB 0.1s done
+#8 DONE 0.1s
+
+#9 [ 4/10] WORKDIR /app
+#9 CACHED
+
+#10 [ 5/10] COPY package.json ./
+#10 CACHED
+
+#11 [ 6/10] COPY plugin/package.json ./plugin/
+#11 CACHED
+
+#12 [ 2/10] RUN apt-get update && apt-get install -y   python3 make g++ git curl unzip   && rm -rf /var/lib/apt/lists/*
+#12 CACHED
+
+#13 [ 3/10] RUN curl -fsSL https://bun.sh/install | bash
+#13 CACHED
+
+#14 [ 7/10] RUN bun install
+#14 CACHED
+
+#15 [ 8/10] COPY . .
+#15 DONE 0.8s
+
+#16 [ 9/10] RUN bun run build
+#16 0.201 $ next build
+#16 0.872 Attention: Next.js now collects completely anonymous telemetry regarding usage.
+#16 0.873 This information is used to shape Next.js' roadmap and prioritize features.
+#16 0.873 You can learn more, including how to opt-out if you'd not like to participate in this anonymous program, by visiting the following URL:
+#16 0.874 https://nextjs.org/telemetry
+#16 0.874 
+#16 0.973    ▲ Next.js 15.5.14
+#16 0.973 
+#16 1.070    Creating an optimized production build ...
+#16 16.27  ✓ Compiled successfully in 12.2s
+#16 16.28    Linting and checking validity of types ...
+#16 21.12    Collecting page data ...
+#16 23.82    Generating static pages (0/9) ...
+#16 24.79    Generating static pages (2/9) 
+#16 24.79    Generating static pages (4/9) 
+#16 24.79    Generating static pages (6/9) 
+#16 25.16  ✓ Generating static pages (9/9)
+#16 25.84    Finalizing page optimization ...
+#16 25.84    Collecting build traces ...
+#16 33.45 
+#16 33.46 Route (app)                                 Size  First Load JS
+#16 33.46 ┌ ○ /                                      124 B         119 kB
+#16 33.46 ├ ○ /_not-found                            991 B         103 kB
+#16 33.46 ├ ƒ /api/auth/[...nextauth]                135 B         102 kB
+#16 33.46 ├ ƒ /api/auth/guest                        135 B         102 kB
+#16 33.46 ├ ƒ /api/chat                              135 B         102 kB
+#16 33.46 ├ ƒ /api/journal                           135 B         102 kB
+#16 33.46 ├ ƒ /api/session                           135 B         102 kB
+#16 33.46 └ ○ /app                                   124 B         119 kB
+#16 33.46 + First Load JS shared by all             102 kB
+#16 33.46   ├ chunks/255-38b49df12a94ee57.js         46 kB
+#16 33.46   ├ chunks/4bd1b696-c023c6e3521b1417.js  54.2 kB
+#16 33.46   └ other shared chunks (total)          1.92 kB
+#16 33.46 
+#16 33.46 
+#16 33.46 ƒ Middleware                             54.1 kB
+#16 33.46 
+#16 33.46 ○  (Static)   prerendered as static content
+#16 33.46 ƒ  (Dynamic)  server-rendered on demand
+#16 33.46 
+#16 DONE 33.9s
+
+#17 [10/10] RUN mkdir -p /app/data
+#17 DONE 0.3s
+
+#18 exporting to image
+#18 exporting layers
+#18 exporting layers 56.0s done
+#18 writing image sha256:f1a13d4f28fbbe29c1327d8dd629569605c47c5ef736bfcc709bc0efb785689b 0.0s done
+#18 naming to docker.io/library/oneq-app done
+#18 DONE 56.0s
+
+#19 resolving provenance for metadata file
+#19 DONE 0.0s
+ oneq-app  Built
+ Network oneq_default  Creating
+ Network oneq_default  Created
+ Volume oneq_oneq_data  Creating
+ Volume oneq_oneq_data  Created
+ Container oneq-app-1  Creating
+ Container oneq-app-1  Created
+Attaching to app-1
+app-1  | $ elizaos start --character ./characters/agent.character.json
+app-1  | [?25l│
+app-1  | ◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project.[999D[J◐  Building project.[999D[J◓  Building project.[999D[J◑  Building project.[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project..[999D[J◐  Building project..[999D[J◓  Building project..[999D[J◑  Building project..[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project...[999D[J◓  Building project...[999D[J◑  Building project...[999D[J◒  Building project...[999D[J◐  Building project[999D[J◓  Building project[999D[J◑  Building project[999D[J◒  Building project[999D[J◇  ✓ Project built successfully
+app-1  | [?25h Info       [CLI] Character loaded (command=start, characterName=Aya)
+app-1  |  Info       [DB] Database directory configured (dataDir=/app/.eliza/.elizadb)
+app-1  |  Info       [DB] Running database migrations
+app-1  |  Info       [PLUGIN:SQL] Initializing migration system
+app-1  |  Info       [PLUGIN:SQL] Migration system initialized
+app-1  |  Info       [PLUGIN:SQL] DatabaseMigrationService initialized
+app-1  |  Info       [PLUGIN:SQL] Plugin schemas discovered (schemasDiscovered=1, totalPlugins=1)
+app-1  |  Info       [PLUGIN:SQL] Starting migrations (environment=DEVELOPMENT, pluginCount=1, dryRun=false)
+app-1  |  Info       [PLUGIN:SQL] Starting migration for plugin (pluginName=@elizaos/plugin-sql)
+app-1  |  Info       [PLUGIN:SQL] Initializing migration system
+app-1  |  Info       [PLUGIN:SQL] Migration system initialized
+app-1  |  Info       [PLUGIN:SQL] No changes detected, skipping migration (pluginName=@elizaos/plugin-sql, hash=0837c648ac972285253e7d5d2812a7a987cfb92abef8f365d07cb610985c7299)
+app-1  |  Info       [PLUGIN:SQL] Migration completed (pluginName=@elizaos/plugin-sql)
+app-1  |  Info       [PLUGIN:SQL] All migrations completed successfully (successCount=1)
+app-1  |  Info       [PLUGIN:SQL] Skipping RLS re-application (ENABLE_DATA_ISOLATION is not true)
+app-1  |  Info       [DB] Checking for server... (serverId=00000000-0000-0000-0000-000000000000)
+app-1  |  Info       [HTTP] Initializing ElizaOS
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Global ElizaOS instance set
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Global AgentServer instance set
+app-1  |  Info       [HTTP] Public health check endpoints enabled: /healthz and /health (rate limited: 100 req/min)
+app-1  |  Info       [HTTP] Configuring authentication middleware...
+app-1  |  Warn       [HTTP] Authentication middleware configured - API Key: DISABLED (set ELIZA_SERVER_AUTH_TOKEN to enable)
+app-1  |  Info       [HTTP] Serving static files (clientPath=/app/node_modules/@elizaos/server/dist/client)
+app-1  |  Info       [WS] SocketIO router initialized (agentCount=0)
+app-1  | AgentServer is listening on port 3001
+app-1  |  Warn       [CORE:SETTINGS] SECRET_SALT is not set or using default value
+app-1  |  Warn       [CORE:PLUGIN] Failed to load plugin (pluginName=solace-plugin, error={"name":"ResolveMessage","position":null,"message":"Cannot find package 'solace-plugin' from '/app/node_modules/@elizaos/core/dist/node/index.node.js'","level":"error","specifier":"solace-plugin","importKind":"import-statement","referrer":"/app/node_modules/@elizaos/core/dist/node/index.node.js"})
+app-1  |  Info       [CORE:PLUGIN] Auto-installing missing plugin (pluginName=solace-plugin)
+app-1  | bun add v1.3.11 (af24e281)
+app-1  | Resolving dependencies
+app-1  | Resolved, downloaded and extracted [1]
+app-1  | error: GET https://registry.npmjs.org/solace-plugin - 404
+app-1  |  Error      [CORE:PLUGIN] Plugin installation failed (pluginName=solace-plugin, exitCode=1)
+app-1  |  Info       #Aya  [PLUGIN:SQL] plugin-sql (node) init starting
+app-1  |  Info       #Aya  [PLUGIN:SQL] No pre-registered database adapter detected; registering adapter
+app-1  |  Info       #Aya  [PLUGIN:SQL] Database adapter created and registered
+app-1  |  Warn       OpenAI API key validation failed: Service Unavailable
+app-1  |  Warn       OpenAI functionality will be limited until a valid API key is provided
+app-1  |  Info       [PLUGIN:SQL] Initializing migration system
+app-1  |  Info       [PLUGIN:SQL] Migration system initialized
+app-1  |  Info       [PLUGIN:SQL] DatabaseMigrationService initialized
+app-1  |  Info       [PLUGIN:SQL] Starting migrations (environment=DEVELOPMENT, pluginCount=1, dryRun=false)
+app-1  |  Info       [PLUGIN:SQL] Starting migration for plugin (pluginName=@elizaos/plugin-sql)
+app-1  |  Info       [PLUGIN:SQL] Initializing migration system
+app-1  |  Info       [PLUGIN:SQL] Migration system initialized
+app-1  |  Info       [PLUGIN:SQL] No changes detected, skipping migration (pluginName=@elizaos/plugin-sql, hash=0837c648ac972285253e7d5d2812a7a987cfb92abef8f365d07cb610985c7299)
+app-1  |  Info       [PLUGIN:SQL] Migration completed (pluginName=@elizaos/plugin-sql)
+app-1  |  Info       [PLUGIN:SQL] All migrations completed successfully (successCount=1)
+app-1  |  Info       [PLUGIN:SQL] Skipping RLS re-application (ENABLE_DATA_ISOLATION is not true)
+app-1  |  Warn       Invalid input format for embedding
+app-1  |  Info       #Aya  [PLUGIN:BOOTSTRAP:SERVICE:EMBEDDING] Starting embedding generation service
+app-1  |  Info       #Aya  [PLUGIN:BOOTSTRAP:SERVICE:EMBEDDING] Initializing embedding generation service
+app-1  |  Info       #Aya  [PLUGIN:BOOTSTRAP:SERVICE:EMBEDDING] Started processing loop
+app-1  |  Info       [AGENT] Successfully registered agent with core services
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Subscribing to internal message bus
+app-1  |  Info       [AGENT] Auto-associated agent with message server (messageServerId=00000000-0000-0000-0000-000000000000)
+app-1  |  Info       [AGENT] Started agents (count=1)
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Agent subscribed to servers (serverCount=1, messageServerId=00000000-0000-0000-0000-000000000000)
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Fetched channels from server (messageServerId=00000000-0000-0000-0000-000000000000, channelCount=26)
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Loaded valid channel IDs from servers (channelCount=26, serverCount=1)
+app-1  | $ next start -p ${NEXT_PORT:-3000}
+app-1  |    ▲ Next.js 15.5.14
+app-1  |    - Local:        http://localhost:3000
+app-1  |    - Network:      http://172.18.0.2:3000
+app-1  | 
+app-1  |  ✓ Starting...
+app-1  |  ✓ Ready in 458ms
+app-1  | [next-auth][error][JWT_SESSION_ERROR] 
+app-1  | https://next-auth.js.org/errors#jwt_session_error decryption operation failed {
+app-1  |   message: 'decryption operation failed',
+app-1  |   stack: 'h: decryption operation failed\n' +
+app-1  |     '    at /app/.next/server/chunks/952.js:1:97378\n' +
+app-1  |     '    at b.default (/app/.next/server/chunks/952.js:1:97405)\n' +
+app-1  |     '    at b.flattenedDecrypt (/app/.next/server/chunks/952.js:10:74056)\n' +
+app-1  |     '    at async b.compactDecrypt (/app/.next/server/chunks/952.js:1:12883)\n' +
+app-1  |     '    at async b.jwtDecrypt (/app/.next/server/chunks/952.js:18:6206)\n' +
+app-1  |     '    at async Object.l [as decode] (/app/.next/server/chunks/952.js:10:26989)\n' +
+app-1  |     '    at async Object.e (/app/.next/server/chunks/952.js:10:52199)\n' +
+app-1  |     '    at async q (/app/.next/server/chunks/952.js:10:38285)\n' +
+app-1  |     '    at async g (/app/.next/server/chunks/952.js:1:1891)\n' +
+app-1  |     '    at async a.length.b (/app/.next/server/chunks/952.js:1:3332)',
+app-1  |   name: 'h'
+app-1  | }
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Received message from central bus (messageId=db540f26-c60c-42df-8965-090ca560d3e0)
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Discovered new channel (channelId=53f26a38-1b7f-443a-b5d2-2c1e4e8ac05b)
+app-1  |  Info       #Aya  [SERVICE:MESSAGE] Message received (entityId=7e54162b-551f-2c33-9ced-075f928b891f, roomId=1188f0d1-3d77-03fe-8778-cec5a7bb11ff)
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Error      #Aya  [SERVICE:MESSAGE] Error processing message (error=Failed after 3 attempts. Last error: Service Unavailable)
+app-1  |  Error      [SERVICE:MESSAGE-BUS] Error processing message via handleMessage (error=Failed after 3 attempts. Last error: Service Unavailable)
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Received message from central bus (messageId=2b2c0fe5-0cb9-4e0b-88ed-f40996d0580d)
+app-1  |  Info       #Aya  [SERVICE:MESSAGE] Message received (entityId=7e54162b-551f-2c33-9ced-075f928b891f, roomId=1188f0d1-3d77-03fe-8778-cec5a7bb11ff)
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Received message from central bus (messageId=f90529eb-9029-4b91-a465-97a77c3fd123)
+app-1  |  Info       #Aya  [SERVICE:MESSAGE] Message received (entityId=7e54162b-551f-2c33-9ced-075f928b891f, roomId=1188f0d1-3d77-03fe-8778-cec5a7bb11ff)
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Error      #Aya  [SERVICE:MESSAGE] Error processing message (error=Failed after 3 attempts. Last error: Service Unavailable)
+app-1  |  Error      [SERVICE:MESSAGE-BUS] Error processing message via handleMessage (error=Failed after 3 attempts. Last error: Service Unavailable)
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Received message from central bus (messageId=8fe25c2f-5bed-4dad-be69-62df5c2eb18a)
+app-1  |  Info       #Aya  [SERVICE:MESSAGE] Message received (entityId=7e54162b-551f-2c33-9ced-075f928b891f, roomId=1188f0d1-3d77-03fe-8778-cec5a7bb11ff)
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Error      #Aya  [SERVICE:MESSAGE] Error processing message (error=Failed after 3 attempts. Last error: Service Unavailable)
+app-1  |  Error      [SERVICE:MESSAGE-BUS] Error processing message via handleMessage (error=Failed after 3 attempts. Last error: Service Unavailable)
+app-1  |  Error      #Aya  [SERVICE:MESSAGE] Error processing message (error=Failed after 3 attempts. Last error: Service Unavailable)
+app-1  |  Error      [SERVICE:MESSAGE-BUS] Error processing message via handleMessage (error=Failed after 3 attempts. Last error: Service Unavailable)
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Received message from central bus (messageId=88399320-71b9-4b8c-b7a3-8b825ebf10f4)
+app-1  |  Info       #Aya  [SERVICE:MESSAGE] Message received (entityId=7e54162b-551f-2c33-9ced-075f928b891f, roomId=1188f0d1-3d77-03fe-8778-cec5a7bb11ff)
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Error      #Aya  [SERVICE:MESSAGE] Error processing message (error=Failed after 3 attempts. Last error: Service Unavailable)
+app-1  |  Error      [SERVICE:MESSAGE-BUS] Error processing message via handleMessage (error=Failed after 3 attempts. Last error: Service Unavailable)
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Received message from central bus (messageId=c39b208f-1d6a-4e13-ac3e-06c15e1ddb66)
+app-1  |  Info       #Aya  [SERVICE:MESSAGE] Message received (entityId=7e54162b-551f-2c33-9ced-075f928b891f, roomId=1188f0d1-3d77-03fe-8778-cec5a7bb11ff)
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Error      #Aya  [SERVICE:MESSAGE] Error processing message (error=Failed after 3 attempts. Last error: Service Unavailable)
+app-1  |  Error      [SERVICE:MESSAGE-BUS] Error processing message via handleMessage (error=Failed after 3 attempts. Last error: Service Unavailable)

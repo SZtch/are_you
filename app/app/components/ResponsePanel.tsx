@@ -29,7 +29,7 @@ interface ResponsePanelProps {
   chatInput: string
   chatLoading: boolean
   showChatPrompt: boolean
-  chatEndRef: RefObject<HTMLDivElement>
+  chatEndRef: RefObject<HTMLDivElement | null>
   s: LangStrings
   onBack: () => void
   onOpenChat: () => void
