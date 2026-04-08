@@ -18,9 +18,12 @@ async function triggerJournalViaEliza(userId: string): Promise<void> {
 
   // writeJournalAction in the plugin intercepts [MODE:JOURNAL],
   // generates content via ElizaOS runtime (Qwen on Nosana), and saves to storage.
+  // '-journal' suffix isolates this from the user's active chat session —
+  // sending into the same session would corrupt ongoing conversation context.
   await sendMessageFireAndForget(
     userId,
-    `[MODE:JOURNAL] Sessions:\n${summary}`
+    `[MODE:JOURNAL] Sessions:\n${summary}`,
+    '-journal'
   );
 }
 

@@ -233,3 +233,24 @@ app-1  |  Warn       [getTracer] Service undefined not found in runtime.
 app-1  |  Warn       [getTracer] Service undefined not found in runtime.
 app-1  |  Error      #Aya  [SERVICE:MESSAGE] Error processing message (error=Failed after 3 attempts. Last error: Service Unavailable)
 app-1  |  Error      [SERVICE:MESSAGE-BUS] Error processing message via handleMessage (error=Failed after 3 attempts. Last error: Service Unavailable)
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Received message from central bus (messageId=7c557169-8d1a-4515-bee2-8073fc57adbe)
+app-1  |  Info       #Aya  [SERVICE:MESSAGE] Message received (entityId=7e54162b-551f-2c33-9ced-075f928b891f, roomId=1188f0d1-3d77-03fe-8778-cec5a7bb11ff)
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Info       [PLUGIN:BOOTSTRAP:PROVIDER:ROLES] Using world ID (worldId=7bf49cf1-fdb5-0f27-959f-5a20376ec91a)
+app-1  |  Info       [PLUGIN:BOOTSTRAP:PROVIDER:ROLES] No ownership data found for world, initializing empty role hierarchy (worldId=7bf49cf1-fdb5-0f27-959f-5a20376ec91a)
+app-1  |  Info       [PLUGIN:BOOTSTRAP:PROVIDER:SETTINGS] No settings state found for server (messageServerId=00000000-0000-0000-0000-000000000000)
+app-1  |  Warn       [getTracer] Service undefined not found in runtime.
+app-1  |  Info       #Aya  [SERVICE:MESSAGE] Raw LLM response received (responseLength=383, responsePreview=
+app-1  | 
+app-1  | <response>
+app-1  |     <thought>The user says hi in CHAT mode after an emotional exchange - they want casual presence now, not another deep question. I'll acknowledge warmly with minimal words and stay curious but not pushy.</thought>
+app-1  |     <actions>REPLY</actions>
+app-1  |     <providers></providers>
+app-1  |     <text>hi there... 
+app-1  | wanting to rest here? 
+app-1  | or maybe something on your mind?</text>
+app-1  | </response>)
+app-1  |  Info       #Aya  [SERVICE:MESSAGE] Parsed XML content (parsedXml={"hasThought":true,"thoughtPreview":"The user says hi in CHAT mode after an emotional exchange - they want casual presence now, not anoth","hasActions":true,"actions":["REPLY"],"hasText":true,"textPreview":"hi there... \nwanting to rest here? \nor maybe something on your mind?"})
+app-1  |  Info       [SERVICE:MESSAGE-BUS] Agent generated response, sending to bus
+[Kapp-1 exited with code 137

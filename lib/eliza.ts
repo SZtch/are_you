@@ -65,11 +65,16 @@ export async function pollForReply(
 
 // Send a message to Eliza without waiting for a reply.
 // Used for fire-and-forget triggers like journal generation.
+//
+// sessionSuffix — appended to userId when looking up/creating the Eliza session.
+// Use a distinct suffix (e.g. '-journal') so journal triggers never share the
+// same session context as the user's active chat, which would corrupt both.
 export async function sendMessageFireAndForget(
   userId: string,
-  text: string
+  text: string,
+  sessionSuffix = ''
 ): Promise<void> {
-  const sessionId = await getOrCreateElizaSession(userId)
+  const sessionId = await getOrCreateElizaSession(userId + sessionSuffix)
 
   const res = await fetch(`${AGENT_URL}/api/messaging/sessions/${sessionId}/messages`, {
     method: 'POST',
@@ -78,7 +83,7 @@ export async function sendMessageFireAndForget(
     signal: AbortSignal.timeout(10000),
   })
 
-  if (!res.ok) invalidateElizaSession(userId)
+  if (!res.ok) invalidateElizaSession(userId + sessionSuffix)
 }
 
 export { AGENT_URL, AGENT_ID }
