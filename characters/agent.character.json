@@ -89,7 +89,7 @@
   ],
   "settings": {
     "model": "Qwen3.5-9B-FP8",
-    "temperature": 0.85,
+    "temperature": 0.4,
     "maxResponseLength": 200,
     "secrets": {}
   },
