@@ -13,13 +13,12 @@ export async function getOrCreateElizaSession(userId: string): Promise<string> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ agentId: AGENT_ID, userId }),
-    signal: AbortSignal.timeout(8000),
+    signal: AbortSignal.timeout(10000),
   })
 
   if (!res.ok) throw new Error(`Eliza session create failed: ${res.status}`)
   const data = await res.json()
 
-  // DEBUG: lihat struktur response session
   console.log('[eliza] session create response:', JSON.stringify(data))
 
   sessionCache.set(userId, {
@@ -39,25 +38,35 @@ export function invalidateElizaSession(userId: string) {
 export async function pollForReply(
   sessionId: string,
   sentAt: number,
-  maxWait = 25000
+  maxWait = 55000
 ): Promise<string | null> {
+  const cutoff = sentAt - 2000
   const deadline = Date.now() + maxWait
 
   while (Date.now() < deadline) {
     try {
       const res = await fetch(
         `${AGENT_URL}/api/messaging/sessions/${sessionId}/messages`,
-        { signal: AbortSignal.timeout(5000) }
+        { signal: AbortSignal.timeout(8000) }
       )
 
       if (res.ok) {
         const data = await res.json()
-        // DEBUG: lihat struktur response messages
-        console.log('[eliza] poll response:', JSON.stringify(data))
+        console.log('[eliza] poll response:', JSON.stringify(data).slice(0, 300))
 
-        const agentMsgs = (data.messages || []).filter(
-          (m: { isAgent: boolean; createdAt: string; content: string | { text?: string } }) =>
-            m.isAgent && new Date(m.createdAt).getTime() > sentAt
+        const msgs = Array.isArray(data) ? data
+          : Array.isArray(data.messages) ? data.messages
+          : Array.isArray(data.data) ? data.data
+          : []
+
+        const agentMsgs = msgs.filter(
+          (m: { isAgent?: boolean; role?: string; createdAt?: string; timestamp?: number; content: string | { text?: string } }) => {
+            const isAgent = m.isAgent === true || m.role === 'agent' || m.role === 'assistant'
+            const ts = m.createdAt
+              ? new Date(m.createdAt).getTime()
+              : (m.timestamp || 0)
+            return isAgent && ts > cutoff
+          }
         )
 
         if (agentMsgs.length > 0) {
@@ -65,16 +74,13 @@ export async function pollForReply(
           return typeof raw === 'string' ? raw : (raw as { text?: string })?.text ?? ''
         }
       } else {
-        // DEBUG: lihat kalau response tidak ok
-        console.log('[eliza] poll failed, status:', res.status, 'sessionId:', sessionId)
+        console.log('[eliza] poll failed, status:', res.status)
       }
     } catch (e) {
       console.log('[eliza] poll error:', e)
     }
 
-    if (Date.now() < deadline) {
-      await new Promise(r => setTimeout(r, 1200))
-    }
+    await new Promise(r => setTimeout(r, 1500))
   }
 
   return null
@@ -91,7 +97,7 @@ export async function sendMessageFireAndForget(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ content: text }),
-    signal: AbortSignal.timeout(8000),
+    signal: AbortSignal.timeout(10000),
   })
 
   if (!res.ok) invalidateElizaSession(userId + sessionSuffix)
