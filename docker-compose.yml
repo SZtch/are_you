@@ -1,0 +1,31 @@
+services:
+  oneq-postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: oneq
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build: ./oneQ-main
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      oneq-postgres:
+        condition: service_healthy
+    env_file:
+      - ./oneQ-main/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:password@oneq-postgres:5432/oneq?schema=public
+
+volumes:
+  postgres_data:
